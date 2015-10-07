@@ -1,0 +1,26 @@
+Package: RiboProfiling
+Type: Package
+Title: Ribosome Profiling Data Analysis: from BAM to Data
+        Representation and Interpretation
+Version: 0.99.7
+Date: 2015-10-04
+Author: Alexandra Popa
+Maintainer: A. Popa <alexandra.mariela.popa@gmail.com>
+Description: Starting with a BAM file, this package provides the
+        necessary functions for quality assessment, read start position
+        recalibration, the counting of reads on CDS, 3'UTR, and 5'UTR,
+        plotting of count data: pairs, log fold-change, codon frequency
+        and coverage assessment, principal component analysis on codon
+        coverage.
+biocViews: Sequencing, Coverage, Alignment, QualityControl, Software,
+        PrincipalComponent
+Depends: R (>= 3.2.2), Biostrings
+Imports: BiocGenerics, GenomeInfoDb, GenomicRanges, IRanges, reshape,
+        GenomicFeatures, grid, plyr, S4Vectors, GenomicAlignments,
+        ggplot2, ggbio, Rsamtools, rtracklayer
+Suggests: knitr, BiocStyle, TxDb.Hsapiens.UCSC.hg19.knownGene,
+        BSgenome.Hsapiens.UCSC.hg19, testthat
+LazyLoad: yes
+License: GPL-3
+VignetteBuilder: knitr
+NeedsCompilation: no

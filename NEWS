@@ -1,0 +1,78 @@
+CHANGES IN VERSION 0.99.7
+-------------------------
+o In riboSeqFromBAM function capture.output called with utils::
+
+CHANGES IN VERSION 0.99.6
+-------------------------
+o In codonPCA functions prcomp and kmeans called with stats::
+
+CHANGES IN VERSION 0.99.5
+-------------------------
+o Added @return for roxygen comment in printPCA.R
+o Updated packages IRanges and BSgenome.Mmusculus.UCSC.mm10 before check.
+
+CHANGES IN VERSION 0.99.4
+-------------------------
+o Non-null coverage values define the percentage of best expressed CDSs.
+o New function: readsToReadStart - 
+    it builds the GRanges object of the read start genomic positions
+o Acronym BAM used instead of bam
+o Correction of read start coverage (readStartCov) for the reverse strand
+o Title in Description in Title Case
+o Typos corrections in vignette.
+o Style inconsistencies solved:
+    = replaced by <- outside named arguments
+    No space around “=” when using named arguments to functions. This: somefunc(a=1, b=2)
+    spaces around binary operators
+    a space after all commas
+    use of camelCase for both variable and function names
+        ORFrelativePos -> orfRelativePos
+o Replaced 1:length(x) by seq_len(length(x))
+o Replaced 1:nrow(x) by seq_len(NROW(x))
+o Replaced trailing white spaces with this command: 'find . -type f -path './*R' -exec perl -i -pe 's/ +$//' {} \;'
+o countsPlot, histMatchLength, plotSummarizedCov: 
+    no longer print directly the graphs. Instead they return a list of graphs.
+o Replaced 'class()' tests by 'inherits' or 'is'.
+o The codonPCA function no longer prints the PCA graphs sequantially.
+    The 5 PCA graphs are returned, together with the PCA scores.
+o New function printPCA prints the 5 PCA plots produced by codonPCA.
+o A BAM file is now available in the inst/extdata ctrl_sample.bam. 
+    It is used in the testriboSeqFromBAM testthat
+
+CHANGES IN VERSION 0.99.3
+-------------------------
+o Correction of a infinite loop in function riboSeq_fromBam 
+
+CHANGES IN VERSION 0.99.2
+-------------------------
+o Modified the vignette: small corrections of the explanatory text. 
+o Added testthat tests for the following functions: 
+    test-aroundPromoter.R,
+    test-riboSeq_fromBAM.R, 
+    test-readStartCov.R
+    
+o Introduced the 4 spaces tabulation
+o Reduced the percentage of lines > 80 characters to 2%
+o Added imports in the Namespace for the proposed packages or methods
+o New R version: 3.2.2 and bioconductor packages update
+
+CHANGES IN VERSION 0.99.1
+-------------------------
+o Added biocViews: 
+    Sequencing, 
+    Coverage, 
+    Alignment, 
+    QualityControl,
+    Software,
+    PrincipalComponent
+o Added testthat tests for the following functions: 
+    test-aroundPromoter.R,
+    test-riboSeq_fromBAM.R, 
+    test-readStartCov.R
+    
+o Introduced the 4 spaces tabulation
+o Reduced the percentage of lines > 80 characters to 2%
+o Added imports in the Namespace for the proposed packages or methods
+
+v.0.99.0 Initial release.
+-------------------------
