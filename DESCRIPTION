@@ -2,8 +2,8 @@ Package: RiboProfiling
 Type: Package
 Title: Ribosome Profiling Data Analysis: from BAM to Data
         Representation and Interpretation
-Version: 1.1.0
-Date: 2015-10-04
+Version: 1.1.1
+Date: 2015-10-29
 Author: Alexandra Popa
 Maintainer: A. Popa <alexandra.mariela.popa@gmail.com>
 Description: Starting with a BAM file, this package provides the
@@ -12,7 +12,7 @@ Description: Starting with a BAM file, this package provides the
         plotting of count data: pairs, log fold-change, codon frequency
         and coverage assessment, principal component analysis on codon
         coverage.
-biocViews: Sequencing, Coverage, Alignment, QualityControl, Software,
+biocViews: RiboSeq, Sequencing, Coverage, Alignment, QualityControl, Software,
         PrincipalComponent
 Depends: R (>= 3.2.2), Biostrings
 Imports: BiocGenerics, GenomeInfoDb, GenomicRanges, IRanges, reshape,
