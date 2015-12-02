@@ -39,8 +39,7 @@ It contains the summarized coverage for the specified read match sizes.
 Read start coverage around the TSS on the predifined CDSs
 }
 \examples{
-#read the BAM into a GAlignments object using
-#GenomicAlignments::readGAlignments
+#read the BAM into a GAlignments object using readGAlignments
 #the GAlignments object should be similar to ctrlGAlignments
 data(ctrlGAlignments)
 aln <- ctrlGAlignments
@@ -50,7 +49,8 @@ alnGRanges <- readsToReadStart(aln)
 
 #make a txdb object containing the annotations for the specified species.
 #In this case hg19.
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 #Please make sure that seqnames of txdb correspond to
 #the seqnames of the alignment files ("chr" particle)
 #if not rename the txdb seqlevels

@@ -34,8 +34,8 @@ readStartCov1Aln <-
     vecReadStartCov <-
         suppressWarnings(findOverlaps(oneBinRanges, alnGRanges))
     values(oneBinReadStartCov) =
-        S4Vectors::DataFrame(
-            values=IRanges::as.table(vecReadStartCov),
+        DataFrame(
+            values=as.table(vecReadStartCov),
             idSeq=oneBinRanges$idSeq
         )
     #regroup per gene name into one object:GRangesList
@@ -272,7 +272,7 @@ applyShiftFeature <-
     }
 
     transcWidth <-
-        GenomicFeatures::transcriptWidths(
+        transcriptWidths(
             start(transcGRangesList),
             end(transcGRangesList)
         )
@@ -284,7 +284,7 @@ applyShiftFeature <-
     if(length(ixSmallTransc) > 0){
         transcGRangesList <- transcGRangesList[-ixSmallTransc]
         transcWidth <-
-            GenomicFeatures::transcriptWidths(
+            transcriptWidths(
                 start(transcGRangesList),
                 end(transcGRangesList)
             )
@@ -309,11 +309,11 @@ applyShiftFeature <-
         )
     #for the remaining positions in the transcript, make 1bp bins of the genomic positions
     shiftedTransc <-
-        GenomicFeatures::transcriptLocs2refLocs(
+        transcriptLocs2refLocs(
             listeUsefulRanges,
             start(transcGRangesList),
             end(transcGRangesList),
-            as.character(S4Vectors::runValue(strand(transcGRangesList))),
+            as.character(runValue(strand(transcGRangesList))),
             decreasing.rank.on.minus.strand=TRUE
         )
     names(shiftedTransc) <- names(transcGRangesList)
@@ -325,11 +325,11 @@ applyShiftFeature <-
 
 naTozeroRle=function(rleObject){
     #check rleObject class
-    ixNA=which(is.na(S4Vectors::runValue(rleObject)))
+    ixNA=which(is.na(runValue(rleObject)))
     if(length(ixNA)>0)
     {
-        S4Vectors::runValue(rleObject)[ixNA]=0;
-        S4Vectors::runLength(rleObject)[ixNA]=0
+        runValue(rleObject)[ixNA]=0;
+        runLength(rleObject)[ixNA]=0
     }
     return(rleObject)
 }
@@ -394,31 +394,31 @@ funcBoxplot <-
     x=NULL
 
 
-    pBoxplot <- ggplot2::ggplot(data = dataGgplot, ggplot2::aes(x=type, y=value))
+    pBoxplot <- ggplot(data = dataGgplot, aes(x=type, y=value))
     if(length(which(colnames(dataGgplot) == "sample")) == 1){
         pBoxplot <- pBoxplot +
-            ggplot2::geom_boxplot(ggplot2::aes(fill = sample))
+            geom_boxplot(aes(fill = sample))
         pBoxplot <- pBoxplot +
-            ggplot2::geom_point(
-                ggplot2::aes(y = value, group = sample),
-                position=ggplot2::position_dodge(width=0.75)
+            geom_point(
+                aes(y = value, group = sample),
+                position=position_dodge(width=0.75)
             )
     }
     else{
         pBoxplot <- pBoxplot +
-            ggplot2::geom_boxplot(ggplot2::aes(fill = type))
+            geom_boxplot(aes(fill = type))
         pBoxplot <- pBoxplot +
-            ggplot2::geom_point(
-                ggplot2::aes(y = value, group = type),
-                position =ggplot2::position_dodge(width=0.75)
+            geom_point(
+                aes(y = value, group = type),
+                position =position_dodge(width=0.75)
             )
     }
     pBoxplot <- pBoxplot +
-        ggplot2::xlab(xText) + ggplot2::ylab(yText) +
-        ggplot2::ggtitle(titleText)
+        xlab(xText) + ylab(yText) +
+        ggtitle(titleText)
     pBoxplot <- pBoxplot +
-        ggplot2::guides(fill=ggplot2::guide_legend(title="sample")) +
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle=90, hjust=1))
+        guides(fill=guide_legend(title="sample")) +
+        theme(axis.text.x = element_text(angle=90, hjust=1))
     pBoxplot
     return(pBoxplot)
 }
@@ -476,38 +476,38 @@ funcPlotPairs <-
 
     upperGrid <- data.frame(gridData$upper)
 
-    pPairs <- ggplot2::ggplot(upperGrid, ggplot2::aes_string(x="x", y="y")) +
-        ggplot2::facet_grid(xvar ~ yvar, scales="free") +
-        ggplot2::geom_point(color="#6495ED") +
-        ggplot2::stat_density(
-            ggplot2::aes(x=x, y=..scaled.. * diff(range(x)) + min(x)),
+    pPairs <- ggplot(upperGrid, aes_string(x="x", y="y")) +
+        facet_grid(xvar ~ yvar, scales="free") +
+        geom_point(color="#6495ED") +
+        stat_density(
+            aes(x=x, y=..scaled.. * diff(range(x)) + min(x)),
             data=gridData$densities, position="identity",
             colour="grey20", geom="line", lwd=1) +
-        ggplot2::geom_abline(
-            ggplot2::aes(color="Diagonal", fill="Diagonal", intercept = 0),
+        geom_abline(
+            aes(color="Diagonal", fill="Diagonal", intercept = 0),
             lwd=1) +
-        ggplot2::geom_smooth(
-            ggplot2::aes(x=x, y=y, color = "Linear_regression", fill = "Linear_regression"),
+        geom_smooth(
+            aes(x=x, y=y, color = "Linear_regression", fill = "Linear_regression"),
             method = "lm", lwd=1) +
-        ggplot2::theme_bw() +
-        ggplot2::theme(
-            axis.title.x=ggplot2::element_blank(),
-            axis.title.y=ggplot2::element_blank()) +
-        ggplot2::geom_text(
+        theme_bw() +
+        theme(
+            axis.title.x=element_blank(),
+            axis.title.y=element_blank()) +
+        geom_text(
             data=gridData$lower,
-            ggplot2::aes(x=x, y=y, label=labs, group=NULL),
+            aes(x=x, y=y, label=labs, group=NULL),
             fontface=2,
             colour="steelblue4") +
-        ggplot2::scale_fill_manual(
+        scale_fill_manual(
             name="Lines",
             values=c('Diagonal'='white', 'Linear_regression'='white')) +
-        ggplot2::scale_colour_manual(
+        scale_colour_manual(
             name="Lines",
             values=c('Diagonal'='brown2', 'Linear_regression'='black'),
             guide='legend') +
-        ggplot2::guides(
-            colour=ggplot2::guide_legend(override.aes=list(linetype=c(1, 1)))) +
-        ggplot2::ggtitle(title)
+        guides(
+            colour=guide_legend(override.aes=list(linetype=c(1, 1)))) +
+        ggtitle(title)
 
     return(pPairs)
 }

@@ -1,6 +1,5 @@
 #' Associates the read counts on codons with the codon type for each ORF.
 #'
-#' @importFrom Biostrings reverseComplement
 #' @param listReadsCodon a list of data.frame objects.
 #' It contains the number of reads per codon in a CDS.
 #' @param genomeSeq a BSgenome object.
@@ -17,24 +16,25 @@
 #' data(codonIndexCovCtrl)
 #' listReadsCodon <- codonIndexCovCtrl
 #'
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 #'
 #' #get the names of the ORFs
 #' #grouped by transcript
-#' cds <- GenomicFeatures::cdsBy(txdb, use.names=TRUE)
+#' cds <- cdsBy(txdb, use.names=TRUE)
 #' orfCoord <- cds[names(cds) %in% names(listReadsCodon)]
 #'
 #' #get the genome, please check that the genome has the same seqlevels
-#' genomeSeq <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+#' library(BSgenome.Hsapiens.UCSC.hg19)
+#' genomeSeq <- BSgenome.Hsapiens.UCSC.hg19
 #' #if not rename it
-#' #gSeq <- GenomeInfoDb::renameSeqlevels(genomeSeq,
-#' #sub("chr", "", GenomeInfoDb::seqlevels(genomeSeq)))
+#' #gSeq <- renameSeqlevels(genomeSeq,
+#' #sub("chr", "", seqlevels(genomeSeq)))
 #'
 #' #codon frequency, coverage, and annotation
 #' codonData <- codonInfo(listReadsCodon, genomeSeq, orfCoord)
 #' @export
-#' @import S4Vectors
-#' @import GenomicFeatures
+#' @import S4Vectors Biostrings GenomicFeatures
 #' @importFrom reshape cast
 #' @importFrom plyr ldply
 
@@ -52,15 +52,15 @@ codonInfo <-
     }
 
     #extract the orf sequence
-    cdsSeqs <- GenomicFeatures::extractTranscriptSeqs(genomeSeq, orfCoord)
+    cdsSeqs <- extractTranscriptSeqs(genomeSeq, orfCoord)
     orfNames <- names(cdsSeqs)
 
-    codonUsage <- Biostrings::trinucleotideFrequency(cdsSeqs, step=3)
+    codonUsage <- trinucleotideFrequency(cdsSeqs, step=3)
     codonUsage <- data.frame(codonUsage)
     rownames(codonUsage) <- orfNames
     #codonUsage <- ldply(codonUsage)
 
-    dataListReadsCodonID <- plyr::ldply(.data=listReadsCodon)
+    dataListReadsCodonID <- ldply(.data=listReadsCodon)
     # system.time(ldply(.data=listReadsCodon))
     # user  system elapsed
     # 16.217   0.001  16.202
@@ -69,7 +69,7 @@ codonInfo <-
     # user  system elapsed
     # 139.369   0.016 139.255
 
-    codonTypeID <- plyr::ldply(codonTypeID)
+    codonTypeID <- ldply(codonTypeID)
     #   system.time(ldply(codonTypeID))
     #   user  system elapsed
     #   515.160  21.022 535.669
@@ -82,7 +82,7 @@ codonInfo <-
     codonTypeCoverage <- codonTypeCoverage[order(codonTypeCoverage$.id), ]
 
     codonTypeCoverageFrame<-
-        reshape::cast(codonTypeCoverage, .id ~ codon, value="nbrReads")
+        cast(codonTypeCoverage, .id ~ codon, value="nbrReads")
     codonCovMatrix <- codonTypeCoverageFrame[, 2:ncol(codonTypeCoverageFrame)]
     rownames(codonCovMatrix) <- codonTypeCoverageFrame$.id
     codonCovMatrix[is.na(codonCovMatrix)] <- 0

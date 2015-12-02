@@ -33,7 +33,9 @@
 #' print(listPCACodonCoverage[[2]])
 #' #See aditional examples in the pdf manual
 #' @export
-#'
+#' @importFrom stats prcomp
+#' @importFrom stats kmeans
+#' @import ggplot2
 
 codonPCA <- 
     function(
@@ -46,29 +48,29 @@ codonPCA <-
     PC3 <- NULL
     PC4 <- NULL
 
-    pca <- stats::prcomp(data, retx=TRUE, center=TRUE)
+    pca <- prcomp(data, retx=TRUE, center=TRUE)
     #screeplot(pca, type="l", main="Scree Plot")
     scores <- pca$x[, 1:4]
 
     percVar <- (pca$sdev)^2/sum(pca$sdev^2)
-    km <- stats::kmeans(scores, centers=3, nstart=5)
+    km <- kmeans(scores, centers=3, nstart=5)
 
     ggdata <- data.frame(scores, Cluster=km$cluster, Transcript=rownames(data))
 
     p12 <-
-        ggplot2::ggplot(
+        ggplot(
             ggdata,
-            ggplot2::aes_string(x="PC1", y="PC2")
+            aes_string(x="PC1", y="PC2")
         ) +
-        ggplot2::geom_text(
+        geom_text(
             alpha=.4,
             size=3,
-            ggplot2::aes(label=Transcript),
+            aes(label=Transcript),
             vjust=2,
             hjust=2
         ) +
-        ggplot2::geom_point(
-            ggplot2::aes(
+        geom_point(
+            aes(
                 x=PC1,
                 y=PC2,
                 color=factor(Cluster)
@@ -76,29 +78,29 @@ codonPCA <-
             size=5,
             shape=20
         ) +
-        ggplot2::ggtitle(typeData)+
-        ggplot2::guides(
-            color=ggplot2::guide_legend("Cluster"),
-            fill=ggplot2::guide_legend("Cluster")
+        ggtitle(typeData)+
+        guides(
+            color=guide_legend("Cluster"),
+            fill=guide_legend("Cluster")
         ) +
-        ggplot2::labs(
+        labs(
             x=paste("PC1(", round(percVar[1], 4), ")", collapse="", sep=""),
             y=paste("PC2(", round(percVar[2], 4), ")", collapse="", sep="")
         )
     p13 <-
-        ggplot2::ggplot(
+        ggplot(
             ggdata,
-            ggplot2::aes_string(x="PC1", y="PC3")
+            aes_string(x="PC1", y="PC3")
         ) +
-        ggplot2::geom_text(
+        geom_text(
             alpha=.4,
             size=3,
-            ggplot2::aes(label=Transcript),
+            aes(label=Transcript),
             vjust=2,
             hjust=1
         ) +
-        ggplot2::geom_point(
-            ggplot2::aes(
+        geom_point(
+            aes(
                 x=PC1,
                 y=PC3,
                 color=factor(Cluster)
@@ -106,29 +108,29 @@ codonPCA <-
             size=5,
             shape=20
         ) +
-        ggplot2::ggtitle(typeData) +
-        ggplot2::guides(
-            color=ggplot2::guide_legend("Cluster"),
-            fill=ggplot2::guide_legend("Cluster")
+        ggtitle(typeData) +
+        guides(
+            color=guide_legend("Cluster"),
+            fill=guide_legend("Cluster")
         ) +
-        ggplot2::labs(
+        labs(
             x=paste("PC1(", round(percVar[1], 4), ")", collapse="", sep=""),
             y=paste("PC3(", round(percVar[3], 4), ")", collapse="", sep="")
         )
     p14 <-
-        ggplot2::ggplot(
+        ggplot(
             ggdata,
-            ggplot2::aes_string(x="PC1", y="PC4")
+            aes_string(x="PC1", y="PC4")
         ) +
-        ggplot2::geom_text(
+        geom_text(
             alpha=.4,
             size=3,
-            ggplot2::aes(label=Transcript),
+            aes(label=Transcript),
             vjust=2,
             hjust=1
         ) +
-        ggplot2::geom_point(
-            ggplot2::aes(
+        geom_point(
+            aes(
                 x=PC1,
                 y=PC4,
                 color=factor(Cluster)
@@ -136,29 +138,29 @@ codonPCA <-
             size=5,
             shape=20
         ) +
-        ggplot2::ggtitle(typeData) +
-        ggplot2::guides(
-            color=ggplot2::guide_legend("Cluster"),
-            fill=ggplot2::guide_legend("Cluster")
+        ggtitle(typeData) +
+        guides(
+            color=guide_legend("Cluster"),
+            fill=guide_legend("Cluster")
         ) +
-        ggplot2::labs(
+        labs(
             x=paste("PC1(", round(percVar[1], 4), ")", collapse="", sep=""),
             y=paste("PC4(", round(percVar[4], 4), ")", collapse="", sep="")
         )
     p23 <-
-        ggplot2::ggplot(
+        ggplot(
             ggdata,
-            ggplot2::aes_string(x="PC2", y="PC3")
+            aes_string(x="PC2", y="PC3")
         ) +
-        ggplot2::geom_text(
+        geom_text(
             alpha=.4,
             size=3,
-            ggplot2::aes(label=Transcript),
+            aes(label=Transcript),
             vjust=2,
             hjust=1
         ) +
-        ggplot2::geom_point(
-            ggplot2::aes(
+        geom_point(
+            aes(
                 x=PC2,
                 y=PC3,
                 color=factor(Cluster)
@@ -166,29 +168,29 @@ codonPCA <-
             size=5,
             shape=20
         ) +
-        ggplot2::ggtitle(typeData)+
-        ggplot2::guides(
-            color=ggplot2::guide_legend("Cluster"),
-            fill=ggplot2::guide_legend("Cluster")
+        ggtitle(typeData)+
+        guides(
+            color=guide_legend("Cluster"),
+            fill=guide_legend("Cluster")
         ) +
-        ggplot2::labs(
+        labs(
             x=paste("PC2(", round(percVar[2], 4), ")", collapse="", sep=""),
             y=paste("PC3(", round(percVar[3], 4), ")", collapse="", sep="")
         )
     p24 <-
-        ggplot2::ggplot(
+        ggplot(
             ggdata,
-            ggplot2::aes_string(x="PC2", y="PC4")
+            aes_string(x="PC2", y="PC4")
         ) +
-        ggplot2::geom_text(
+        geom_text(
             alpha=.4,
             size=3,
-            ggplot2::aes(label=Transcript),
+            aes(label=Transcript),
             vjust=2,
             hjust=1
         ) +
-        ggplot2::geom_point(
-            ggplot2::aes(
+        geom_point(
+            aes(
                 x=PC2,
                 y=PC4,
                 color=factor(Cluster)
@@ -196,12 +198,12 @@ codonPCA <-
             size=5,
             shape=20
         ) +
-        ggplot2::ggtitle(typeData)+
-        ggplot2::guides(
-            color=ggplot2::guide_legend("Cluster"),
-            fill=ggplot2::guide_legend("Cluster")
+        ggtitle(typeData)+
+        guides(
+            color=guide_legend("Cluster"),
+            fill=guide_legend("Cluster")
         ) +
-        ggplot2::labs(
+        labs(
             x=paste("PC2(", round(percVar[2], 4), ")", collapse="", sep=""),
             y=paste("PC4(", round(percVar[4], 4), ")", collapse="", sep="")
         )

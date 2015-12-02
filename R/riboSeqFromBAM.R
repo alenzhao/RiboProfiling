@@ -2,9 +2,6 @@
 #' coverage on multiple transcript features and on codons.
 #'
 #'
-#' @importMethodsFrom GenomeInfoDb "seqlevels<-"
-#' @importMethodsFrom S4Vectors "runValue<-"
-#' @importFrom Rsamtools BamFile
 #' @param listeInputBamFile A character path or a vector of paths to the
 #'   ribo-seq BAM file(s). If multiple BAM files are provided, they should come
 #'   from the same genome alignment.
@@ -33,7 +30,8 @@
 #' @examples
 #' #the txdb object can be given as parameter or not.
 #' #If it is not specified, a txdb object is build from UCSC.
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 #'
 #' #in this example only one BAM file is treated.
 #' #However, multiple BAM files can be analyzed together.
@@ -44,9 +42,10 @@
 #' #in UCSC and your BAM correspond: the "chr" particle
 #' covData <- riboSeqFromBAM(listeInputBam, txdb=txdb, listShiftValue=c(-14))
 #' @export
-#' @import GenomicAlignments
-#' @import rtracklayer
-#'
+#' @import S4Vectors GenomeInfoDb SummarizedExperiment
+#' @import Rsamtools GenomicAlignments rtracklayer GenomicFeatures
+#' @importFrom utils capture.output
+
 riboSeqFromBAM <-
     function(
         listeInputBamFile,
@@ -68,7 +67,7 @@ riboSeqFromBAM <-
         else{
             ####### get the UCSC ensGene annotations
             #for the annotations, check the available genomes
-            listUCSCAvGenomes <- rtracklayer::ucscGenomes()[ , "db"]
+            listUCSCAvGenomes <- ucscGenomes()[ , "db"]
             if(!(genomeName %in% listUCSCAvGenomes)){
                 stop(
                     paste(
@@ -82,7 +81,7 @@ riboSeqFromBAM <-
             }
             #gene annotations from UCSC
             txdb <- suppressWarnings(
-                GenomicFeatures::makeTranscriptDbFromUCSC(
+                makeTranscriptDbFromUCSC(
                     genome=genomeName,
                     tablename="ensGene",
                     url="http://genome-euro.ucsc.edu/cgi-bin/"
@@ -94,10 +93,10 @@ riboSeqFromBAM <-
     #first get only protein_coding transcripts
     #listTranscriptsPerGene=transcriptsBy(txdb,by="gene")
     #grouped by transcript
-    cds <- GenomicFeatures::cdsBy(txdb, by="tx", use.names=TRUE)
+    cds <- cdsBy(txdb, by="tx", use.names=TRUE)
     #it groups all described exons by gene
-    cdsAll <- GenomicFeatures::cdsBy(txdb, by="gene")
-    exonGRanges <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
+    cdsAll <- cdsBy(txdb, by="gene")
+    exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
 
     cdsPosTransc <- orfRelativePos(cds, exonGRanges)
 
@@ -129,12 +128,12 @@ riboSeqFromBAM <-
 
         #read the BAM file
         message("\nRead alignment file\n")
-        aln <- GenomicAlignments::readGAlignments(inputBamFile)
+        aln <- readGAlignments(inputBamFile)
         #transform the GAlignments vs GRanges (containg the read start info)
         #also add the info on the match size of the read
         alnGRanges <- readsToReadStart(aln)
 
-        if(length(unique(GenomeInfoDb::seqnames(alnGRanges))) <= 0){
+        if(length(unique(seqnames(alnGRanges))) <= 0){
             stop("Coverage is null for all chromosomes. Check seqnames!\n")
         }
 
@@ -147,26 +146,26 @@ riboSeqFromBAM <-
         #if txdb and the BAM have differences in terms of "chr" name annotation
         seqLvlsInters <- length(
             intersect(
-                GenomeInfoDb::seqlevels(aln),
-                GenomeInfoDb::seqlevels(txdb)
+                seqlevels(aln),
+                seqlevels(txdb)
             ))
         myCond1 <-
-            seqLvlsInters / length(S4Vectors::runValue(GenomeInfoDb::seqnames(aln))) * 100 <= 80
+            seqLvlsInters / length(runValue(seqnames(aln))) * 100 <= 80
         myCond2 <-
-            seqLvlsInters / length(GenomeInfoDb::seqlevels(txdb)) * 100 <= 80
+            seqLvlsInters / length(seqlevels(txdb)) * 100 <= 80
         if(myCond1 && myCond2){
             warning("Differences in seqlevels between the txdb and the BAM! \n")
             message(
                 paste(
                     "# The BAM file has the following seqlevels: \n",
-                    paste(GenomeInfoDb::seqlevels(aln), sep="\t"),
+                    paste(seqlevels(aln), sep="\t"),
                     "\n",
                     sep="")
             )
             message(
                 paste(
                     "# The transcript database file has the following seqlevels: \n",
-                    paste(GenomeInfoDb::seqlevels(txdb), sep="\t"),
+                    paste(seqlevels(txdb), sep="\t"),
                     "\n",
                     sep="")
             )
@@ -183,13 +182,13 @@ riboSeqFromBAM <-
         #keep only CDS on the chromosomes for which there are reads
         #cdsAll_chr=cdsAll[seqnames(cdsAll) %in% seqInAlignment]
         seqlevels(cdsAll, force=TRUE) <- as.character(seqInAlignment)
-        cdsByGene <- cdsAll[S4Vectors::elementLengths(cdsAll) != 0]
+        cdsByGene <- cdsAll[elementLengths(cdsAll) != 0]
 
 
         ####### plot the coverage x bp left and right from the TSS
         #get coverage on CDS
         countsPCGenesAllExons <-
-            GenomicAlignments::summarizeOverlaps(
+            summarizeOverlaps(
                 cdsByGene,
                 alnGRanges,
                 mode="IntersectionNotEmpty"
@@ -203,7 +202,7 @@ riboSeqFromBAM <-
             percBestExpressed <- 0.03
         }
 
-        vecCountsPerGene <- GenomicRanges::assays(countsPCGenesAllExons)$counts
+        vecCountsPerGene <- assays(countsPCGenesAllExons)$counts
         quantCounts <- quantile(vecCountsPerGene, 1-percBestExpressed)
         if(quantCounts <= 0 || missing(quantCounts)){
             stop("No gene had counts overlapping the CDS!\n")
@@ -230,7 +229,7 @@ riboSeqFromBAM <-
         }
 
         flankPromoter <-
-            GenomicRanges::promoters(
+            promoters(
                 cdsByBestExprLongTransc,
                 flankSize,
                 flankSize + 1
@@ -238,7 +237,7 @@ riboSeqFromBAM <-
         #keep only unique TSS regions
         #for those genes with multiple cds per gene keep only the first
         flankPromoterUniq <-
-            S4Vectors::endoapply(flankPromoter, function(ixTSS){ ixTSS[1] })
+            endoapply(flankPromoter, function(ixTSS){ ixTSS[1] })
 
         #transform the gene ranges into one GRanges object and add cds_id.
         oneBinRanges <-
@@ -246,7 +245,7 @@ riboSeqFromBAM <-
                 flankPromoterUniq,
                 function(ixTSS){
                     tmpOneBinGRanges=unlist(tile(ixTSS, n=width(ixTSS)));
-                    values(tmpOneBinGRanges)=S4Vectors::DataFrame(
+                    values(tmpOneBinGRanges)=DataFrame(
                         values=0,
                         idSeq=rep(ixTSS$cds_id[1], length(tmpOneBinGRanges))
                     );
@@ -306,7 +305,7 @@ riboSeqFromBAM <-
 
     listCountsPlots <- 
         countsPlot(listCounts, grep("_counts$", colnames(listCounts[[1]])), 1)
-    invisible(utils::capture.output(
+    invisible(capture.output(
         suppressWarnings(
             suppressMessages(
                 print(listCountsPlots))

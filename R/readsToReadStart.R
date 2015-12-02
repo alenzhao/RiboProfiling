@@ -5,14 +5,14 @@
 #' For the reverse strand the read position on the genome is the end of the read
 #'
 #' @examples
-#' #read the BAM file into a GAlignments object using
-#' #GenomicAlignments::readGAlignments
+#' #read the BAM file into a GAlignments object using readGAlignments
 #' #the GAlignments object should be similar to ctrlGAlignments object
 #' data(ctrlGAlignments)
 #' aln <- ctrlGAlignments
 #' #transform the GAlignments object into a GRanges object (faster processing)
 #' alnGRanges <- readsToReadStart(aln)
 #' @export
+#' @import BiocGenerics IRanges GenomicAlignments
 
 
 readsToReadStart <-
@@ -22,19 +22,19 @@ readsToReadStart <-
     stopifnot(is(aln, "GAlignments"))
 
     #find the indexes of the reads on the reverse strand
-    ixMinusStrand <- which(BiocGenerics::strand(aln) == "-")
+    ixMinusStrand <- which(strand(aln) == "-")
 
-    startRead <- IRanges::IRanges(start=BiocGenerics::start(aln), width=1)
+    startRead <- IRanges(start=start(aln), width=1)
     #if the read is on the reverse strand, the start position is the end
-    startRead[ixMinusStrand] <- IRanges::IRanges(start=BiocGenerics::end(aln[ixMinusStrand]), width=1)
+    startRead[ixMinusStrand] <- IRanges(start=end(aln[ixMinusStrand]), width=1)
 
     alnGRanges <-
-        GenomicRanges::GRanges(
-            GenomeInfoDb::seqnames(aln),
+        GRanges(
+            seqnames(aln),
             startRead,
-            strand=BiocGenerics::strand(aln),
-            score=GenomicAlignments::cigarWidthAlongReferenceSpace(
-                GenomicAlignments::cigar(aln), N.regions.removed=TRUE)
+            strand=strand(aln),
+            score=cigarWidthAlongReferenceSpace(
+                cigar(aln), N.regions.removed=TRUE)
         )
 
     return(alnGRanges)

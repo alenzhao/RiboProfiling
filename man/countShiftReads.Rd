@@ -41,8 +41,7 @@ returns the coverage on the 5pUTR, CDS, 3pUTR,
 as well as a matrix of codon coverage per ORF.
 }
 \examples{
-#read the BAM file into a GAlignments object using
-#GenomicAlignments::readGAlignments
+#read the BAM file into a GAlignments object using readGAlignments
 #the GAlignments object should be similar to ctrlGAlignments
 data(ctrlGAlignments)
 aln <- ctrlGAlignments
@@ -52,17 +51,18 @@ alnGRanges <- readsToReadStart(aln)
 
 #make a txdb object containing the annotations for the specified species.
 #In this case hg19.
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 #Please make sure that seqnames of txdb correspond to
 #the seqnames of the alignment files ("chr" particle)
 #if not rename the txdb seqlevels
 #renameSeqlevels(txdb, sub("chr", "", seqlevels(txdb)))
 
 #get all CDSs by transcript
-cds <- GenomicFeatures::cdsBy(txdb, by="tx", use.names=TRUE)
+cds <- cdsBy(txdb, by="tx", use.names=TRUE)
 
 #get all exons by transcript
-exonGRanges <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
+exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
 #get the per transcript relative position of start and end codons
 cdsPosTransc <- orfRelativePos(cds, exonGRanges)
 #compute the counts on the different features after applying

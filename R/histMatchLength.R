@@ -18,6 +18,7 @@
 #' #to plot the histogram
 #' matchLenDistr[[2]]
 #' @export
+#' @import GenomicAlignments ggplot2
 #'
 histMatchLength <-
     function(
@@ -45,8 +46,8 @@ histMatchLength <-
 
     #get match length
     vecMLength <-
-        GenomicAlignments::cigarWidthAlongReferenceSpace(
-            GenomicAlignments::cigar(aln),
+        cigarWidthAlongReferenceSpace(
+            cigar(aln),
             N.regions.removed=TRUE
         )
 
@@ -62,67 +63,67 @@ histMatchLength <-
     if(log10Transf == 0){
         #barplot of nbr of reads per match size
         barPlotMatchSize <-
-            ggplot2::ggplot(dataGGPMLength, ggplot2::aes(matchSize, counts)) +
-            ggplot2::geom_bar(
+            ggplot(dataGGPMLength, aes(matchSize, counts)) +
+            geom_bar(
                 stat="identity",
                 position="dodge",
                 color="steelblue",
                 fill="steelblue"
             ) +
-            ggplot2::labs(x="Match size", y="Number of reads",fill=NULL)+
-            ggplot2::theme(
-                axis.title.y=ggplot2::element_text(
+            labs(x="Match size", y="Number of reads",fill=NULL)+
+            theme(
+                axis.title.y=element_text(
                     family="serif",
                     size=15,
                     face="bold"
                 )
             ) +
-            ggplot2::theme(
-                axis.title.x=ggplot2::element_text(
+            theme(
+                axis.title.x=element_text(
                     family="serif",
                     size=15,
                     face="bold"
                 )
             ) +
-            ggplot2::ggtitle(titleHist) +
-            ggplot2::theme(
-                axis.text.x=ggplot2::element_text(angle=90, hjust=1)
+            ggtitle(titleHist) +
+            theme(
+                axis.text.x=element_text(angle=90, hjust=1)
             )
     }else{
         #barplot of nbr of reads per match size
         barPlotMatchSize <-
-            ggplot2::ggplot(
+            ggplot(
                 dataGGPMLength,
-                ggplot2::aes(matchSize, log10(counts))
+                aes(matchSize, log10(counts))
             ) +
-            ggplot2::geom_bar(
+            geom_bar(
                 stat="identity",
                 position="dodge",
                 color="steelblue",
                 fill="steelblue"
             ) +
-            ggplot2::labs(
+            labs(
                 x="Match size",
                 y="log10 Number of reads",
                 fill=NULL
             ) +
-            ggplot2::theme(
-                axis.title.y=ggplot2::element_text(
+            theme(
+                axis.title.y=element_text(
                     family="serif",
                     size=15,
                     face="bold"
                 )
             ) +
-            ggplot2::theme(
-                axis.title.x=ggplot2::element_text(
+            theme(
+                axis.title.x=element_text(
                     family="serif",
                     size=15,
                     face="bold"
                 )
             ) +
-            ggplot2::ggtitle(titleHist)+
-            ggplot2::theme(
-                axis.text.x=ggplot2::element_text(angle=90, hjust=1)
+            ggtitle(titleHist)+
+            theme(
+                axis.text.x=element_text(angle=90, hjust=1)
             )
     }
 

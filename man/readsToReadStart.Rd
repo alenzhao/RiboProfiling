@@ -17,8 +17,7 @@ For the reverse strand the read position on the genome is the end of the read
 Transforms the reads in GAlignments to Read Start Positions in GRanges
 }
 \examples{
-#read the BAM file into a GAlignments object using
-#GenomicAlignments::readGAlignments
+#read the BAM file into a GAlignments object using readGAlignments
 #the GAlignments object should be similar to ctrlGAlignments object
 data(ctrlGAlignments)
 aln <- ctrlGAlignments

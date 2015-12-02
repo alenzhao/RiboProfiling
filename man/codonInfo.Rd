@@ -31,18 +31,20 @@ Associates the read counts on codons with the codon type for each ORF.
 data(codonIndexCovCtrl)
 listReadsCodon <- codonIndexCovCtrl
 
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 
 #get the names of the ORFs
 #grouped by transcript
-cds <- GenomicFeatures::cdsBy(txdb, use.names=TRUE)
+cds <- cdsBy(txdb, use.names=TRUE)
 orfCoord <- cds[names(cds) \%in\% names(listReadsCodon)]
 
 #get the genome, please check that the genome has the same seqlevels
-genomeSeq <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+library(BSgenome.Hsapiens.UCSC.hg19)
+genomeSeq <- BSgenome.Hsapiens.UCSC.hg19
 #if not rename it
-#gSeq <- GenomeInfoDb::renameSeqlevels(genomeSeq,
-#sub("chr", "", GenomeInfoDb::seqlevels(genomeSeq)))
+#gSeq <- renameSeqlevels(genomeSeq,
+#sub("chr", "", seqlevels(genomeSeq)))
 
 #codon frequency, coverage, and annotation
 codonData <- codonInfo(listReadsCodon, genomeSeq, orfCoord)

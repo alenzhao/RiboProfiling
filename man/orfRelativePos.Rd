@@ -23,13 +23,14 @@ Relative position of the start and stop codon along the transcript
 \examples{
 #make a txdb object containing the annotations for the specified species.
 #In this case hg19.
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 
 #get all CDSs by transcript
-cds <- GenomicFeatures::cdsBy(txdb, by="tx", use.names=TRUE)
+cds <- cdsBy(txdb, by="tx", use.names=TRUE)
 
 #get all exons by transcript
-exonGRanges <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
+exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
 
 #retrieve the positions of start and end codons relative to the transcript
 cdsPosTransc <- orfRelativePos(cds, exonGRanges)
