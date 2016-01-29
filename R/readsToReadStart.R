@@ -12,7 +12,7 @@
 #' #transform the GAlignments object into a GRanges object (faster processing)
 #' alnGRanges <- readsToReadStart(aln)
 #' @export
-#' @import BiocGenerics IRanges GenomicAlignments
+#' @import methods BiocGenerics S4Vectors IRanges GenomicAlignments
 
 
 readsToReadStart <-

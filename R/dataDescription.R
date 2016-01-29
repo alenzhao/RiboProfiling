@@ -2,7 +2,7 @@
 #'
 #' @name RiboProfiling
 #' @docType package
-#' @import BiocGenerics
+#' @import methods BiocGenerics S4Vectors
 NULL
 
 #' Ribosome profiling data on chr1 in human primary BJ fibroblasts control data: PMID: 23594524.

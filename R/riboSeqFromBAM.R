@@ -42,7 +42,7 @@
 #' #in UCSC and your BAM correspond: the "chr" particle
 #' covData <- riboSeqFromBAM(listeInputBam, txdb=txdb, listShiftValue=c(-14))
 #' @export
-#' @import S4Vectors GenomeInfoDb SummarizedExperiment
+#' @import methods S4Vectors GenomeInfoDb SummarizedExperiment
 #' @import Rsamtools GenomicAlignments rtracklayer GenomicFeatures
 #' @importFrom utils capture.output
 
@@ -182,7 +182,7 @@ riboSeqFromBAM <-
         #keep only CDS on the chromosomes for which there are reads
         #cdsAll_chr=cdsAll[seqnames(cdsAll) %in% seqInAlignment]
         seqlevels(cdsAll, force=TRUE) <- as.character(seqInAlignment)
-        cdsByGene <- cdsAll[elementLengths(cdsAll) != 0]
+        cdsByGene <- cdsAll[elementNROWS(cdsAll) != 0]
 
 
         ####### plot the coverage x bp left and right from the TSS

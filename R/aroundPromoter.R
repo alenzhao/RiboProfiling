@@ -31,7 +31,7 @@
 #' #get the flanking region around the promoter of the best expressed CDSs
 #' oneBinRanges <- aroundPromoter(txdb, alnGRanges)
 #' @export
-#' @import IRanges SummarizedExperiment GenomicAlignments GenomicFeatures
+#' @import method S4Vectors IRanges SummarizedExperiment GenomicAlignments GenomicFeatures
 
 aroundPromoter <-
     function(
@@ -62,7 +62,7 @@ aroundPromoter <-
     #keep only CDS on the chromosomes for which there are reads
     #cdsAllChr=cdsAll[seqnames(cdsAll) %in% seqInAlignment]
     seqlevels(cdsAll, force=TRUE) <- as.character(seqInAlignment)
-    cdsByGene <- cdsAll[elementLengths(cdsAll) != 0]
+    cdsByGene <- cdsAll[elementNROWS(cdsAll) != 0]
 
     #choose the best expressed CDSs
     #first get the CDS coverage

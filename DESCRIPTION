@@ -2,7 +2,7 @@ Package: RiboProfiling
 Type: Package
 Title: Ribosome Profiling Data Analysis: from BAM to Data
         Representation and Interpretation
-Version: 1.1.2
+Version: 1.1.3
 Date: 2015-12-02
 Author: Alexandra Popa
 Maintainer: A. Popa <alexandra.mariela.popa@gmail.com>
@@ -16,8 +16,8 @@ biocViews: RiboSeq, Sequencing, Coverage, Alignment, QualityControl, Software,
         PrincipalComponent
 Depends: R (>= 3.2.2), GenomeInfoDb, Biostrings, GenomicAlignments,
         GenomicFeatures
-Imports: BiocGenerics, S4Vectors, IRanges, GenomicRanges, SummarizedExperiment,
-        rtracklayer, Rsamtools,
+Imports: methods, BiocGenerics, S4Vectors (>= 0.9.25), IRanges, GenomicRanges,
+        SummarizedExperiment, Rsamtools, rtracklayer,
         utils, stats, reshape, grid, plyr, ggplot2, ggbio
 Suggests: knitr, BiocStyle, TxDb.Hsapiens.UCSC.hg19.knownGene,
         BSgenome.Hsapiens.UCSC.hg19, testthat
