@@ -28,7 +28,6 @@
 #' @return a ggplot2 plot of read coverage in interval
 #' @export
 #' @importFrom ggbio tracks
-#' @importFrom ggbio ggplot
 #' @import grid ggplot2
 #'
 
