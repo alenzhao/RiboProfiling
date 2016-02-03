@@ -37,9 +37,9 @@
 #' @importFrom stats kmeans
 #' @import ggplot2
 
-codonPCA <- 
+codonPCA <-
     function(
-        data, 
+        data,
         typeData){
     Transcript <- NULL
     PC1 <- NULL
@@ -47,6 +47,9 @@ codonPCA <-
     Cluster <- NULL
     PC3 <- NULL
     PC4 <- NULL
+    .id <- NULL
+    codonID <- NULL
+    codon <- NULL
 
     pca <- prcomp(data, retx=TRUE, center=TRUE)
     #screeplot(pca, type="l", main="Scree Plot")
@@ -210,7 +213,7 @@ codonPCA <-
     #put the PCA plots in a list
     listPCAPlots <- list(p12, p13, p14, p23, p24)
     names(listPCAPlots) <- c("PC_1-2", "PC_1-3", "PC_1-4", "PC_2-3", "PC_2-4")
-    
+
     returnList <- list(scores, listPCAPlots)
     names(returnList) <- c("PCA_scores","PCA_plots")
 

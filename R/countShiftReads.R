@@ -13,6 +13,8 @@
 #' @param shiftValue integer.
 #' The offset for recalibrating reads on transcripts when computing coverage.
 #' The default value for this parameter is 0, no offset should be performed.
+#' @param motifSize an integer. The number of nucleotides in each motif
+#' on which to compute coverage and usage. Default 3 nucleotides (codon).
 #' @return a list with 2 objects.
 #' The first object in the list is a data.frame containing:
 #' information on ORFs (names, chromosomal position, length)
@@ -29,7 +31,7 @@
 #' aln <- ctrlGAlignments
 #'
 #' #transform the GAlignments object into a GRanges object (faster processing)
-#' alnGRanges <- readsToReadStart(aln)
+#' alnGRanges <- readsToStartOrEnd(aln, what="start")
 #'
 #' #make a txdb object containing the annotations for the specified species.
 #' #In this case hg19.
@@ -59,7 +61,8 @@ countShiftReads <-
         exonGRanges,
         cdsPosTransc,
         alnGRanges,
-        shiftValue){
+        shiftValue,
+        motifSize){
     #check cdsPosTransc no NA values, no missing, all integer
     if(missing(cdsPosTransc)){
         stop("Missing cdsPosTransc parameter!\n")
@@ -77,6 +80,7 @@ countShiftReads <-
         shiftValue <- 0
         warning("Incorrect shiftValue parameter! No shift is performed!\n")
     }
+
     if(!is(exonGRanges, "GRangesList")){
         stop(
             paste(
@@ -97,6 +101,12 @@ countShiftReads <-
             )
         )
     }
+
+    if(missing(motifSize) || !is(motifSize, "numeric") || motifSize %% 1 != 0 || motifSize <= 0){
+        warning("Param motifSize should be an integer! Default value is 3.\n")
+        motifSize <- 3
+    }
+
 
     exonGRangesRestrict <- exonGRanges[names(cdsPosTransc)]
 
@@ -204,22 +214,22 @@ countShiftReads <-
         matchedReadsTransc <-
             match(sort(overlapReadsRle[[ixTransc]]), binTranscVal);
         matchedReadsCDS <-
-            naTozeroRle(match(matchedReadsTransc, listeRangesCDS[[ixTransc]]))
+            naTozeroRle(match(matchedReadsTransc, listeRangesCDS[[ixTransc]]));
         matchedReads5UTR <-
-            naTozeroRle(match(matchedReadsTransc, listeRanges5UTR[[ixTransc]]))
+            naTozeroRle(match(matchedReadsTransc, listeRanges5UTR[[ixTransc]]));
         matchedReads3UTR <-
-            naTozeroRle(match(matchedReadsTransc, listeRanges3UTR[[ixTransc]]))
+            naTozeroRle(match(matchedReadsTransc, listeRanges3UTR[[ixTransc]]));
         #count the number of reads per codon
         if(length(matchedReadsCDS) > 0){
             myCodonCounts <-
                 aggregate(
-                    runLength(matchedReadsCDS),
-                    by=list(ceiling(runValue(matchedReadsCDS) / 3)),
+                    S4Vectors::runLength(matchedReadsCDS),
+                    by=list(ceiling(S4Vectors::runValue(matchedReadsCDS) / motifSize)),
                     FUN=sum
                 )
         }
         else{
-            nbrCodons <- ceiling(length(listeRangesCDS[[ixTransc]]) / 3)
+            nbrCodons <- ceiling(length(listeRangesCDS[[ixTransc]]) / motifSize)
             myCodonCounts <- data.frame(cbind(1:nbrCodons, rep(0, nbrCodons)))
         }
         names(myCodonCounts) <- c("codonID","nbrReads");

@@ -483,8 +483,13 @@ funcPlotPairs <-
             aes(x=x, y=..scaled.. * diff(range(x)) + min(x)),
             data=gridData$densities, position="identity",
             colour="grey20", geom="line", lwd=1) +
+<<<<<<< .mine
+        ggplot2::geom_abline(
+            ggplot2::aes(color="Diagonal", fill="Diagonal", intercept = 0, slope=1),
+=======
         geom_abline(
             aes(color="Diagonal", fill="Diagonal", intercept = 0),
+>>>>>>> .r113245
             lwd=1) +
         geom_smooth(
             aes(x=x, y=y, color = "Linear_regression", fill = "Linear_regression"),
@@ -516,14 +521,27 @@ funcPlotPairs <-
 
 getCodons <-
     function(
-        seqChar){
-    oneCharSplit <- sapply(seqChar, strsplit, "")[[1]]
+        seqChar, sizeMotif){
+#    oneCharSplit <- sapply(seqChar, strsplit, "")[[1]]
+#
+#     codonSeq <-
+#         paste0(
+#             oneCharSplit[c(TRUE, FALSE, FALSE)],
+#             oneCharSplit[c(FALSE, TRUE, FALSE)],
+#             oneCharSplit[c(FALSE, FALSE, TRUE)]
+#         )
+
     codonSeq <-
-        paste0(
-            oneCharSplit[c(TRUE, FALSE, FALSE)],
-            oneCharSplit[c(FALSE, TRUE, FALSE)],
-            oneCharSplit[c(FALSE, FALSE, TRUE)]
+        substring(
+            seqChar,
+            seq(1, nchar(seqChar)-1, sizeMotif),
+            seq(sizeMotif, nchar(seqChar), sizeMotif)
         )
+    #if the last element in sequence is smaller than the desired size
+    #ignore it
+    if(codonSeq[length(codonSeq)] == ""){
+        codonSeq <- head(codonSeq, -1)
+    }
     codonsInSeq <- cbind(seq_len(length(codonSeq)), codonSeq)
     colnames(codonsInSeq) <- c("codonID", "codon")
     codonsInSeq[,1] <- as.numeric(as.character(codonsInSeq[, 1]))

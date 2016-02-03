@@ -25,23 +25,23 @@ library("knitr")
 opts_chunk$set(tidy=FALSE,dev="png",fig.show="hide",
                fig.width=4,fig.height=4.5,
                message=FALSE)
-@ 
+@
 
 <<<style-knitr, eval=TRUE, echo=FALSE, results="asis">>=
 BiocStyle::latex()
-@ 
+@
 
 
 
 \begin{document}
 %\SweaveOpts{concordance=TRUE}
 %\SweaveOpts{concordance=TRUE}
-% 
+%
 % <<setup, include=FALSE, cache=FALSE>>=
 % muffleError <- function(x,options) {}
 % knit_hooks$set(error=muffleError)
 % @
-% 
+%
 
 \maketitle
 
@@ -66,7 +66,7 @@ Ribosome profiling, the recently developed high throughput sequencing technique,
 \item Principal component analysis of codon coverage in ribosome-profiling.
 \end{itemize}
 
-The package also provides the \Rfunction{riboSeqFromBAM} function, that assembles in a global framework some of the above analyses, allowing a quick overview of the data.  
+The package also provides the \Rfunction{riboSeqFromBAM} function, that assembles in a global framework some of the above analyses, allowing a quick overview of the data.
 
 \section{Data Input}
 As input data, the \Rpackage{RiboProfiling} package can start with a path to a ribo-seq (or other type of) BAM to be analyzed. A list of multiple BAM files can also be provided. BAM files from either bowtie/tophat, STAR, and Lifescope (Solid), single- and paired-end have been validated. Many intermediate functions of the \Rpackage{RiboProfiling} package can be called for additional modifications on the data objects.
@@ -139,7 +139,7 @@ covData <-
 \captionof{figure}{
 \textbf{Histogram of read match size and read start offset to ribosome P-site
     for ctrl.bam dataset.}}
-\label{Hist_Offset_ctrl1}  
+\label{Hist_Offset_ctrl1}
 \end{minipage}\hfill
 
 
@@ -150,7 +150,7 @@ covData <-
 \captionof{figure}{
   \textbf{Histogram of read match size and read start offset to ribosome P-site
     for nutlin2h.bam dataset.}}
-\label{Hist_Offset_ctrl2} 
+\label{Hist_Offset_ctrl2}
 \end{minipage}\hfill
 
 
@@ -177,7 +177,7 @@ covData <-
 
 All these results will be explained in detail in the following sections.
 
-This general function only works if your species model has an ensembl table in the UCSC database or if you provide the corresponding txdb object containing the annotations. 
+This general function only works if your species model has an ensembl table in the UCSC database or if you provide the corresponding txdb object containing the annotations.
 
 \section{Histogram of read match length}
 This histogram represents both a quality control of the sequencing and an important tool to define the match sizes of reads corresponding to ribosome footprints (around 30bp). The \emph{histMatchLength} function in the \Rpackage{RiboProfiling} package produces this histogram starting from a GAlignment object (the loaded records of a BAM) such as the \emph{ctrlGAlignments} data example (figure \ref{Hist_matchLength}).
@@ -196,7 +196,7 @@ aln <- ctrlGAlignments
 matchLenDistr <- histMatchLength(aln, 0)
 matchLenDistr[[2]]
 @
- 
+
 \noindent%
 \begin{minipage}{\linewidth}% to keep image and caption on one page
 \centering
@@ -218,9 +218,9 @@ The initiation of protein synthesis starts with the first codon in the P-site. I
 
 
 <<CovAroundTSS_quick,eval=FALSE,echo=TRUE,split=TRUE,fig=FALSE>>=
-#transform the GAlignments object into a GRanges object 
+#transform the GAlignments object into a GRanges object
 #(faster processing of the object)
-alnGRanges <- readsToReadStart(aln)
+alnGRanges <- readsToStartOrEnd(aln, what="start")
 #txdb object with annotations
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 oneBinRanges <- aroundPromoter(txdb, alnGRanges, percBestExpressed=0.001)
@@ -238,13 +238,13 @@ plotSummarizedCov(listPromoterCov)
 @
 
 <<TSS_Cov,echo=FALSE,eval=TRUE,dev="pdf",fig.height=10,pdf=FALSE,jpeg=TRUE>>=
-#transform the GAlignments object into a GRanges object 
+#transform the GAlignments object into a GRanges object
 #(faster processing of the object)
-alnGRanges <- readsToReadStart(aln)
-#make a txdb object containing the annotations for the specified species. 
+alnGRanges <- readsToStartOrEnd(aln, what="start")
+#make a txdb object containing the annotations for the specified species.
 #In this case hg19.
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
-#Please make sure that seqnames of txdb correspond to the seqnames 
+#Please make sure that seqnames of txdb correspond to the seqnames
 #of the alignment files ("chr" particle)
 #if not rename the txdb seqlevels
 #renameSeqlevels(txdb, sub("chr", "", seqlevels(txdb)))
@@ -283,7 +283,7 @@ The first time you analyse a ribo-seq BAM file, it is advisable to make an offse
 
 The purpose of Ribosome Profiling experiments is mainly to identify RNAse resistant regions, which might indicate that these sequences are likely to be translated. The \Rfunction{countShiftReads} function quantifies the read start coverage on different sequence features. This function integrates the specificity of ribo-seq data of having shifted reads starts from the P-site codon. The \Rfunction{countShiftReads} function recalibrates the read start positions along the transcript with the specified offset (parameter \emph{shiftValue}, default 0) and returns the coverage on the 5pUTR, CDS, 3pUTR, and a matrix of codon coverage for each ORF.
 
-The counts can be used globally to see what is RNAse protected and what is not, but also for differential analysis between conditions. The \Rfunction{countsPlot} function provides some quality graphs for the ribo-seq data: pairs between counts on features and boxplots of counts between conditions. 
+The counts can be used globally to see what is RNAse protected and what is not, but also for differential analysis between conditions. The \Rfunction{countsPlot} function provides some quality graphs for the ribo-seq data: pairs between counts on features and boxplots of counts between conditions.
 
 As an example, we compute the read coverage on the \textbf{ctrlGAlignments} example data:
 
@@ -296,9 +296,9 @@ cds <- cdsBy(txdb, by="tx", use.names=TRUE)
 exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
 #get the per transcript relative position of start and end codons
 cdsPosTransc <- orfRelativePos(cds, exonGRanges)
-#compute the counts on the different features 
+#compute the counts on the different features
 #after applying the specified shift value on the read start along the transcript
-countsDataCtrl1 <- 
+countsDataCtrl1 <-
     countShiftReads(
         exonGRanges=exonGRanges[names(cdsPosTransc)],
         cdsPosTransc=cdsPosTransc,
@@ -323,7 +323,7 @@ cds <- cdsBy(txdb, by="tx", use.names=TRUE)
 exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
 #get the per transcript relative position of start and end codons
 cdsPosTransc <- orfRelativePos(cds, exonGRanges)
-#compute the counts on the different features after applying 
+#compute the counts on the different features after applying
 #the specified shift value on the read start along the transcript
 countsDataCtrl1 <-
     countShiftReads(

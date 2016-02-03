@@ -4,16 +4,16 @@
 #' @param covSummarized a list of GRanges objects.
 #' For each matchSize a GRanges object of the summarized coverage.
 #' @examples
-#' #read the BAM file into a GAlignments object using readGAlignments
+#' #read the BAM file into a GAlignments object using
+#' #GenomicAlignments::readGAlignments
 #' #the GAlignments object should be similar to ctrlGAlignments
 #' data(ctrlGAlignments)
 #' aln <- ctrlGAlignments
 #' #transform the GAlignments object into a GRanges object (faster processing)
-#' alnGRanges <- readsToReadStart(aln)
+#' alnGRanges <- readsToStartOrEnd(aln, what="start")
 #' #make a txdb object containing the annotations for the specified species.
 #' #In this case hg19.
-#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 #' #Please make sure that seqnames of txdb correspond to
 #' #the seqnames of the alignment files ("chr" particle)
 #' #if not rename the txdb seqlevels
@@ -28,7 +28,7 @@
 #' @return a ggplot2 plot of read coverage in interval
 #' @export
 #' @importFrom ggbio tracks
-#' @import grid ggplot2
+#' @importFrom grid unit
 #'
 
 plotSummarizedCov <-
@@ -50,24 +50,24 @@ plotSummarizedCov <-
         if(maxPeak <= 100){yLab <- "% of reads"}
         else{yLab <- "nbr reads"}
         iPlot <-
-            ggplot(iSumCov, aes(start, values)) +
-            geom_point() +
-            geom_line() +
-            xlab("") +
-            ylab(yLab);
+            ggplot(iSumCov, ggplot2::aes(start, values)) +
+            ggplot2::geom_point() +
+            ggplot2::geom_line() +
+            ggplot2::xlab("") +
+            ggplot2::ylab(yLab);
         iPlot <-
             iPlot +
-            geom_point(
+            ggplot2::geom_point(
                 data=data.frame(start=maxPeakPos, values=maxPeak),
-                aes(x=start, y=values),
+                ggplot2::aes(x=start, y=values),
                 colour="brown2",
                 size=3
             );
         iPlot <-
             iPlot +
-            geom_text(
+            ggplot2::geom_text(
                 data=data.frame(start=maxPeakPos, values=maxPeak),
-                aes(label=start),
+                ggplot2::aes(label=start),
                 colour="brown2",
                 hjust=-1.5,
                 fontface="bold"
@@ -76,12 +76,12 @@ plotSummarizedCov <-
     names(listPlotSum) <- names(covSummarized)
 
     #try to adapt the size of the track and that of the image
-    trackPlotTSS <- tracks(
+    trackPlotTSS <- ggbio::tracks(
         listPlotSum,
-        heights=rep(unit(4, "cm"), length(listPlotSum)),
-        main.height=unit(1.75 * length(listPlotSum), "cm")
+        heights=rep(grid::unit(4, "cm"), length(listPlotSum)),
+        main.height=grid::unit(1.75 * length(listPlotSum), "cm")
     )
-    
+
     return(trackPlotTSS)
 
 }

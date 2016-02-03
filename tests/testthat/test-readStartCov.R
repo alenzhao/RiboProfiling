@@ -3,7 +3,7 @@ library(RiboProfiling)
 
 data(ctrlGAlignments)
 aln <- ctrlGAlignments
-alnGRanges <- readsToReadStart(aln)
+alnGRanges <- readsToStartOrEnd(aln, what="start")
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 

@@ -27,7 +27,7 @@
 #' aln <- ctrlGAlignments
 #'
 #' #transform the GAlignments object into a GRanges object (faster processing)
-#' alnGRanges <- readsToReadStart(aln)
+#' alnGRanges <- readsToStartOrEnd(aln, what="start")
 #'
 #' #make a txdb object containing the annotations for the specified species.
 #' #In this case hg19.

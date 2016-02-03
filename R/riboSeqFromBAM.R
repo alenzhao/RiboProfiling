@@ -5,7 +5,7 @@
 #' @param listeInputBamFile A character path or a vector of paths to the
 #'   ribo-seq BAM file(s). If multiple BAM files are provided, they should come
 #'   from the same genome alignment.
-#' @param genomeName A character object containing the name of the genome used
+#' @param genomeName a character object containing the name of the genome used
 #'   for the alignment BAM file. The name should be one of the UCSC ensGene
 #'   list: ucscGenomes()[ , "db"]. Ex. "hg19" or "mm10". This parameter is used
 #'   to build the TxDb object.
@@ -17,6 +17,8 @@
 #'   the shiftValue parameter must be estimated. Default value 0.03 (3\%).
 #' @param flankSize an integer. How many bp left and right of the TSS should the
 #'   coverage be performed?
+#' @param offsetStartEnd a character object. Either "start" (the default) or "end"
+#' for read start or read end to define the offset.
 #' @param listShiftValue a vector of integer. It should have the same length as
 #'   the inputBamFile vector. The numeric value for shifting ranges of reads on
 #'   genomic features when computing coverage. Set this parameter to 0 if no
@@ -53,11 +55,21 @@ riboSeqFromBAM <-
         txdb,
         percBestExpressed,
         flankSize,
+        offsetStartEnd,
         listShiftValue){
 
     listCounts <- list(length=length(listeInputBamFile))
     listInfo <- list(length=length(listeInputBamFile))
     listCodonCounts <- list(length=length(listeInputBamFile))
+
+    #check the offsetStartEnd parameter validity
+    if(missing(offsetStartEnd)){
+        offsetStartEnd <- "start"
+    }
+    if((offsetStartEnd != "start" && offsetStartEnd != "end")){
+        warning("offsetStartEnd parameter is invalid. Set to default start value!\n")
+        offsetStartEnd <- "start"
+    }
 
     if(missing(txdb)){
         message("\nGet UCSC ensGene annotations.\n")
@@ -131,7 +143,7 @@ riboSeqFromBAM <-
         aln <- readGAlignments(inputBamFile)
         #transform the GAlignments vs GRanges (containg the read start info)
         #also add the info on the match size of the read
-        alnGRanges <- readsToReadStart(aln)
+        alnGRanges <- readsToStartOrEnd(aln, what=offsetStartEnd)
 
         if(length(unique(seqnames(alnGRanges))) <= 0){
             stop("Coverage is null for all chromosomes. Check seqnames!\n")
@@ -303,7 +315,7 @@ riboSeqFromBAM <-
     names(listInfo) <- namesInputBF
     names(listCodonCounts) <- namesInputBF
 
-    listCountsPlots <- 
+    listCountsPlots <-
         countsPlot(listCounts, grep("_counts$", colnames(listCounts[[1]])), 1)
     invisible(capture.output(
         suppressWarnings(
