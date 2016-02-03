@@ -483,13 +483,8 @@ funcPlotPairs <-
             aes(x=x, y=..scaled.. * diff(range(x)) + min(x)),
             data=gridData$densities, position="identity",
             colour="grey20", geom="line", lwd=1) +
-<<<<<<< .mine
         ggplot2::geom_abline(
             ggplot2::aes(color="Diagonal", fill="Diagonal", intercept = 0, slope=1),
-=======
-        geom_abline(
-            aes(color="Diagonal", fill="Diagonal", intercept = 0),
->>>>>>> .r113245
             lwd=1) +
         geom_smooth(
             aes(x=x, y=y, color = "Linear_regression", fill = "Linear_regression"),
