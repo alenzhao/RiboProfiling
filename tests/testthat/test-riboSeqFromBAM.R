@@ -3,8 +3,7 @@ library(RiboProfiling)
 
 myBamFile <- system.file("extdata", "ctrl_sample.bam", package="RiboProfiling")
 listeInputBam <- c(myBamFile)
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 covData <-
     suppressMessages(
         suppressWarnings(

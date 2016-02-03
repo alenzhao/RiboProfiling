@@ -25,7 +25,8 @@
 #' This per codon coverage does not contain information on the codon type,
 #' just its position in the ORF and its coverage.
 #' @examples
-#' #read the BAM file into a GAlignments object using readGAlignments
+#' #read the BAM file into a GAlignments object using
+#' #GenomicAlignments::readGAlignments
 #' #the GAlignments object should be similar to ctrlGAlignments
 #' data(ctrlGAlignments)
 #' aln <- ctrlGAlignments
@@ -35,18 +36,17 @@
 #'
 #' #make a txdb object containing the annotations for the specified species.
 #' #In this case hg19.
-#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 #' #Please make sure that seqnames of txdb correspond to
 #' #the seqnames of the alignment files ("chr" particle)
 #' #if not rename the txdb seqlevels
 #' #renameSeqlevels(txdb, sub("chr", "", seqlevels(txdb)))
 #'
 #' #get all CDSs by transcript
-#' cds <- cdsBy(txdb, by="tx", use.names=TRUE)
+#' cds <- GenomicFeatures::cdsBy(txdb, by="tx", use.names=TRUE)
 #'
 #' #get all exons by transcript
-#' exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
+#' exonGRanges <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
 #' #get the per transcript relative position of start and end codons
 #' cdsPosTransc <- orfRelativePos(cds, exonGRanges)
 #' #compute the counts on the different features after applying
@@ -54,7 +54,6 @@
 #' countsData <- countShiftReads(exonGRanges[names(cdsPosTransc)], cdsPosTransc,
 #'            alnGRanges, -14)
 #' @export
-#' @import GenomicFeatures
 
 countShiftReads <-
     function(
@@ -123,7 +122,7 @@ countShiftReads <-
 
 
     transcWidth <-
-        transcriptWidths(
+        GenomicFeatures::transcriptWidths(
             start(exonGRangesRestrict),
             end(exonGRangesRestrict)
         )
@@ -148,14 +147,14 @@ countShiftReads <-
             start(alnGRanges[queryHits(overlapReads)]),
             factor(subjectHits(overlapReads))
         )
-    overlapReadsRle <- sapply(startOverlapReads, Rle)
+    overlapReadsRle <- sapply(startOverlapReads, S4Vectors::Rle)
 
     #now keep only those transcripts that have reads on them
     #put a warning if nothing left
     transcWithReads <- transcBig[as.numeric(names(overlapReadsRle))]
     cdsPosTranscWithReads <- cdsPosTransc[as.numeric(names(overlapReadsRle))]
     newTranscWidth <-
-        transcriptWidths(
+        GenomicFeatures::transcriptWidths(
             start(transcWithReads),
             end(transcWithReads)
         )
@@ -201,7 +200,7 @@ countShiftReads <-
     binTransc <- applyShiftFeature(transcWithReads, 0)
 
     #additional info
-    strandInfo <- runValue(strand(transcWithReads))
+    strandInfo <- S4Vectors::runValue(strand(transcWithReads))
 
     #find reads mapped on the shifted transcripts
     shiftedTranscMatches <- lapply(seq_len(length(binTransc)), function(ixTransc){
@@ -235,9 +234,9 @@ countShiftReads <-
         names(myCodonCounts) <- c("codonID","nbrReads");
         list(
             c(
-                sum(runLength(matchedReadsCDS)),
-                sum(runLength(matchedReads5UTR)),
-                sum(runLength(matchedReads3UTR))
+                sum(S4Vectors::runLength(matchedReadsCDS)),
+                sum(S4Vectors::runLength(matchedReads5UTR)),
+                sum(S4Vectors::runLength(matchedReads3UTR))
             ),
             myCodonCounts
         )
@@ -249,8 +248,8 @@ countShiftReads <-
     rownames(countsFeatures) <- names(shiftedTranscMatches)
 
     #additional info
-    #strandInfo=runValue(strand(transc_withReads))
-    chrInfo <- runValue(seqnames(transcWithReads))
+    #strandInfo=S4Vectors::runValue(strand(transc_withReads))
+    chrInfo <- S4Vectors::runValue(seqnames(transcWithReads))
     startInfo <- min(start(transcWithReads))
     endInfo <- max(end(transcWithReads))
     cdsInfo <- do.call(rbind, cdsPosTranscWithReads)

@@ -19,7 +19,8 @@ Plots the summarized coverage in a specified range (e.g. around TSS)
 for the specified match sizes
 }
 \examples{
-#read the BAM file into a GAlignments object using readGAlignments
+#read the BAM file into a GAlignments object using
+#GenomicAlignments::readGAlignments
 #the GAlignments object should be similar to ctrlGAlignments
 data(ctrlGAlignments)
 aln <- ctrlGAlignments
@@ -27,8 +28,7 @@ aln <- ctrlGAlignments
 alnGRanges <- readsToStartOrEnd(aln, what="start")
 #make a txdb object containing the annotations for the specified species.
 #In this case hg19.
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 #Please make sure that seqnames of txdb correspond to
 #the seqnames of the alignment files ("chr" particle)
 #if not rename the txdb seqlevels

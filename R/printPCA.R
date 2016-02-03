@@ -21,13 +21,12 @@
 #' listPCACodonCoverage <- codonPCA(codonCovMatrixTransp,"codonCoverage")
 #' printPCA(listPCACodonCoverage[[2]])
 #' @export
-#' @importFrom ggbio arrangeGrobByParsingLegend
 
 printPCA <- function(
     listPCAGraphs){
     stopifnot(inherits(listPCAGraphs, "list"))
     stopifnot(inherits(listPCAGraphs[[1]], "ggplot"))
-    suppressWarnings(arrangeGrobByParsingLegend(
+    suppressWarnings(ggbio::arrangeGrobByParsingLegend(
         listPCAGraphs,
         ncol=3,
         nrow=2,

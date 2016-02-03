@@ -14,7 +14,8 @@
 #' @return A GRanges object containing the 1 bp ranges for the selected CDSs in
 #'   the TSS defined flanking region.
 #' @examples
-#' #read the BAM into a GAlignments object using readGAlignments
+#' #read the BAM into a GAlignments object using
+#' #GenomicAlignments::readGAlignments
 #' #the GAlignments object should be similar to ctrlGAlignments
 #' data(ctrlGAlignments)
 #' aln <- ctrlGAlignments
@@ -22,8 +23,7 @@
 #' alnGRanges <- readsToStartOrEnd(aln, what="start")
 #' #make a txdb object containing the annotations for the specified species.
 #' #In this case hg19.
-#' library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+#' txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 #' #Please make sure that seqnames of txdb correspond to
 #' #the seqnames of the alignment files ("chr" particle)
 #' #if not rename the txdb seqlevels
@@ -31,7 +31,7 @@
 #' #get the flanking region around the promoter of the best expressed CDSs
 #' oneBinRanges <- aroundPromoter(txdb, alnGRanges)
 #' @export
-#' @import method S4Vectors IRanges SummarizedExperiment GenomicAlignments GenomicFeatures
+#' @import IRanges
 
 aroundPromoter <-
     function(
@@ -57,17 +57,17 @@ aroundPromoter <-
          No seqnames in the alnGRanges object.\n")
     }
     #it groups all described CDS exons by gene
-    cdsAll <- cdsBy(txdb, by="gene")
+    cdsAll <- GenomicFeatures::cdsBy(txdb, by="gene")
 
     #keep only CDS on the chromosomes for which there are reads
     #cdsAllChr=cdsAll[seqnames(cdsAll) %in% seqInAlignment]
     seqlevels(cdsAll, force=TRUE) <- as.character(seqInAlignment)
-    cdsByGene <- cdsAll[elementNROWS(cdsAll) != 0]
+    cdsByGene <- cdsAll[S4Vectors::elementLengths(cdsAll) != 0]
 
     #choose the best expressed CDSs
     #first get the CDS coverage
     countsPCGenesAllExons <-
-        summarizeOverlaps(
+        GenomicAlignments::summarizeOverlaps(
             cdsByGene,
             alnGRanges,
             mode="IntersectionNotEmpty"
@@ -83,7 +83,7 @@ aroundPromoter <-
         percBestExpressed <- 0.03
     }
 
-    vecCountsPerGene <- assays(countsPCGenesAllExons)$counts
+    vecCountsPerGene <- GenomicRanges::assays(countsPCGenesAllExons)$counts
     quantCounts <- quantile(vecCountsPerGene[which(vecCountsPerGene > 0)], 1-percBestExpressed)
     if(quantCounts <= 0){
         stop("No gene had counts overlapping the CDS!\n")
@@ -111,7 +111,7 @@ aroundPromoter <-
     }
 
     flankPromoter <-
-        promoters(
+        GenomicRanges::promoters(
             cdsByBestExprLongTransc,
             flankSize,
             flankSize + 1
@@ -119,14 +119,14 @@ aroundPromoter <-
     #keep only unique TSS regions
     #for those genes with multiple cds per gene keep only the first
     flankPromoterUniq <-
-        endoapply(flankPromoter, function(ixTSS){ ixTSS[1] })
+        S4Vectors::endoapply(flankPromoter, function(ixTSS){ ixTSS[1] })
 
     #transform the gene ranges into one GRanges object with info on the cds_id.
     oneBinRanges <-
-        unlist(endoapply(flankPromoterUniq, function(ixTSS){
+        unlist(S4Vectors::endoapply(flankPromoterUniq, function(ixTSS){
         tmpOneBinGRanges <- unlist(tile(ixTSS, n=width(ixTSS)));
         values(tmpOneBinGRanges)=
-            DataFrame(
+            S4Vectors::DataFrame(
                 values=0,
                 idSeq=rep(ixTSS$cds_id[1], length(tmpOneBinGRanges))
             );

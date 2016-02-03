@@ -24,7 +24,8 @@ A list of pairs and boxplots between the counts data in each data.frame.
 Graphs of sample read counts (quality assesment)
 }
 \examples{
-#read the BAM file into a GAlignments object using readGAlignments
+#read the BAM file into a GAlignments object using
+#GenomicAlignments::readGAlignments
 #the GAlignments object should be similar to ctrlGAlignments
 data(ctrlGAlignments)
 aln <- ctrlGAlignments
@@ -34,8 +35,7 @@ alnGRanges <- readsToStartOrEnd(aln, what="start")
 
 #make a txdb object containing the annotations for the specified species.
 #In this case hg19.
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 #Please make sure that seqnames of txdb correspond to
 #the seqnames of the alignment files ("chr" particle)
 #if not rename the txdb seqlevels
@@ -43,10 +43,10 @@ txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 #get the flanking region around the promoter of the best expressed CDSs
 
 #get all CDSs by transcript
-cds <- cdsBy(txdb,by="tx",use.names=TRUE)
+cds <- GenomicFeatures::cdsBy(txdb,by="tx",use.names=TRUE)
 
 #get all exons by transcript
-exonGRanges <- exonsBy(txdb,by="tx",use.names=TRUE)
+exonGRanges <- GenomicFeatures::exonsBy(txdb,by="tx",use.names=TRUE)
 
 #get the per transcript relative position of start and end codons
 cdsPosTransc <- orfRelativePos(cds, exonGRanges)

@@ -4,12 +4,10 @@ library(RiboProfiling)
 data(ctrlGAlignments)
 aln <- ctrlGAlignments
 alnGRanges <- readsToStartOrEnd(aln, what="start")
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
 
 oneBinRanges <-
     aroundPromoter(
-        txdb,
+        TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene,
         alnGRanges
     )
 

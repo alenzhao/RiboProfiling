@@ -52,8 +52,7 @@ coverage on multiple transcript features and on codons.
 \examples{
 #the txdb object can be given as parameter or not.
 #If it is not specified, a txdb object is build from UCSC.
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 
 #in this example only one BAM file is treated.
 #However, multiple BAM files can be analyzed together.

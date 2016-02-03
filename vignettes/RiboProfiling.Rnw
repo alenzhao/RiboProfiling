@@ -113,11 +113,10 @@ suppressMessages(library(RiboProfiling))
 
 <<riboSeqfromBam,echo=FALSE,eval=TRUE,pdf=FALSE,jpeg=TRUE,fig.width=7>>=
 listeInputBam <- c(
-    BamFile("http://genomique.info/data/public/RiboProfiling/ctrl.bam"),
-    BamFile("http://genomique.info/data/public/RiboProfiling/nutlin2h.bam")
+    Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/ctrl.bam"),
+    Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/nutlin2h.bam")
 )
-library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 covData <-
     suppressMessages(
         suppressWarnings(
@@ -243,7 +242,7 @@ plotSummarizedCov(listPromoterCov)
 alnGRanges <- readsToStartOrEnd(aln, what="start")
 #make a txdb object containing the annotations for the specified species.
 #In this case hg19.
-txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 #Please make sure that seqnames of txdb correspond to the seqnames
 #of the alignment files ("chr" particle)
 #if not rename the txdb seqlevels
@@ -318,9 +317,9 @@ listCountsPlots
 
 <<CountReads,echo=FALSE,eval=TRUE,fig.width=7,pdf=FALSE,jpeg=TRUE>>=
 #get all CDSs by transcript
-cds <- cdsBy(txdb, by="tx", use.names=TRUE)
+cds <- GenomicFeatures::cdsBy(txdb, by="tx", use.names=TRUE)
 #get all exons by transcript
-exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
+exonGRanges <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
 #get the per transcript relative position of start and end codons
 cdsPosTransc <- orfRelativePos(cds, exonGRanges)
 #compute the counts on the different features after applying
@@ -373,7 +372,6 @@ listReadsCodon <- countsDataCtrl1[[2]]
 #get the names of the expressed ORFs grouped by transcript
 cds <- cdsBy(txdb, use.names=TRUE)
 orfCoord <- cds[names(cds) %in% names(listReadsCodon)]
-library(BSgenome.Hsapiens.UCSC.hg19)
 #chromosome names should correspond between the BAM,
 #the annotations, and the genome
 genomeSeq <- BSgenome.Hsapiens.UCSC.hg19
@@ -386,10 +384,9 @@ codonData <- codonInfo(listReadsCodon, genomeSeq, orfCoord)
 listReadsCodon <- countsDataCtrl1[[2]]
 #get the names of the ORFs for which we have coverage
 #grouped by transcript
-cds <- cdsBy(txdb, use.names=TRUE)
+cds <- GenomicFeatures::cdsBy(txdb, use.names=TRUE)
 orfCoord <- cds[names(cds) %in% names(listReadsCodon)]
-library(BSgenome.Hsapiens.UCSC.hg19)
-genomeSeq <- BSgenome.Hsapiens.UCSC.hg19
+genomeSeq <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
 #codon frequency, coverage, and annotation
 codonData <- codonInfo(listReadsCodon, genomeSeq, orfCoord)
 @
