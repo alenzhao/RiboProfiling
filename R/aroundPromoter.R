@@ -83,7 +83,7 @@ aroundPromoter <-
         percBestExpressed <- 0.03
     }
 
-    vecCountsPerGene <- GenomicRanges::assays(countsPCGenesAllExons)$counts
+    vecCountsPerGene <- assays(countsPCGenesAllExons)$counts
     quantCounts <- quantile(vecCountsPerGene[which(vecCountsPerGene > 0)], 1-percBestExpressed)
     if(quantCounts <= 0){
         stop("No gene had counts overlapping the CDS!\n")
