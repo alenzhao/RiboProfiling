@@ -1,3 +1,8 @@
+CHANGES IN VERSION 1.1.5
+-------------------------
+o replaced GenomicRanges::assays since it is not exported by GenomicRanges anymore,
+    by SummarizedExperiment::assays, and importFrom
+
 CHANGES IN VERSION 1.1.4
 -------------------------
 o replaced GenomicRanges::assays since it is not exported by GenomicRanges anymore,

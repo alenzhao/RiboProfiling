@@ -8,6 +8,8 @@
 #' @param listeInputBamFile A character path or a vector of paths to the
 #'   ribo-seq BAM file(s). If multiple BAM files are provided, they should come
 #'   from the same genome alignment.
+#' @param paramScanBAM NULL or ScanBamParam object specifying what fields and
+#' which records are imported. Default value is NULL.
 #' @param genomeName a character object containing the name of the genome used
 #'   for the alignment BAM file. The name should be one of the UCSC ensGene
 #'   list: ucscGenomes()[ , "db"]. Ex. "hg19" or "mm10". This parameter is used
@@ -52,6 +54,7 @@
 riboSeqFromBAM <-
     function(
         listeInputBamFile,
+        paramScanBAM,
         genomeName,
         txdb,
         percBestExpressed,
@@ -70,6 +73,15 @@ riboSeqFromBAM <-
     if((offsetStartEnd != "start" && offsetStartEnd != "end")){
         warning("offsetStartEnd parameter is invalid. Set to default start value!\n")
         offsetStartEnd <- "start"
+    }
+
+    #check for paramScanBAM object
+    if(missing(paramScanBAM)){
+        paramScanBAM <- NULL
+    }
+    if(!is(paramScanBAM, "ScanBamParam")){
+        warning("paramScanBAM parameter is not a ScanBamParam object. Set to default NULL value!\n")
+        paramScanBAM <- NULL
     }
 
     if(missing(txdb)){
@@ -141,7 +153,7 @@ riboSeqFromBAM <-
 
         #read the BAM file
         message("\nRead alignment file\n")
-        aln <- GenomicAlignments::readGAlignments(inputBamFile)
+        aln <- GenomicAlignments::readGAlignments(inputBamFile, param=paramScanBAM)
         #transform the GAlignments vs GRanges (containg the read start info)
         #also add the info on the match size of the read
         alnGRanges <- readsToStartOrEnd(aln, what=offsetStartEnd)
@@ -215,7 +227,7 @@ riboSeqFromBAM <-
             percBestExpressed <- 0.03
         }
 
-        vecCountsPerGene <- assays(countsPCGenesAllExons)$counts
+        vecCountsPerGene <- SummarizedExperiment::assays(countsPCGenesAllExons)$counts
         quantCounts <- quantile(vecCountsPerGene, 1-percBestExpressed)
         if(quantCounts <= 0 || missing(quantCounts)){
             stop("No gene had counts overlapping the CDS!\n")

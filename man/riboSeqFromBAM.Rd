@@ -5,13 +5,16 @@
 \title{Starting from a BAM file path: quality plots, shift ribosome position,
 coverage on multiple transcript features and on codons.}
 \usage{
-riboSeqFromBAM(listeInputBamFile, genomeName, txdb, percBestExpressed,
-  flankSize, offsetStartEnd, listShiftValue)
+riboSeqFromBAM(listeInputBamFile, paramScanBAM, genomeName, txdb,
+  percBestExpressed, flankSize, offsetStartEnd, listShiftValue)
 }
 \arguments{
 \item{listeInputBamFile}{A character path or a vector of paths to the
 ribo-seq BAM file(s). If multiple BAM files are provided, they should come
 from the same genome alignment.}
+
+\item{paramScanBAM}{NULL or ScanBamParam object specifying what fields and
+which records are imported. Default value is NULL.}
 
 \item{genomeName}{a character object containing the name of the genome used
 for the alignment BAM file. The name should be one of the UCSC ensGene

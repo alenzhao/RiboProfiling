@@ -33,6 +33,7 @@
 #' @export
 #' @import IRanges
 
+
 aroundPromoter <-
     function(
         txdb,
@@ -83,7 +84,7 @@ aroundPromoter <-
         percBestExpressed <- 0.03
     }
 
-    vecCountsPerGene <- assays(countsPCGenesAllExons)$counts
+    vecCountsPerGene <- SummarizedExperiment::assays(countsPCGenesAllExons)$counts
     quantCounts <- quantile(vecCountsPerGene[which(vecCountsPerGene > 0)], 1-percBestExpressed)
     if(quantCounts <= 0){
         stop("No gene had counts overlapping the CDS!\n")

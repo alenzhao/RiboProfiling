@@ -2,8 +2,8 @@ Package: RiboProfiling
 Type: Package
 Title: Ribosome Profiling Data Analysis: from BAM to Data
         Representation and Interpretation
-Version: 1.1.4
-Date: 2016-02-05
+Version: 1.1.5
+Date: 2016-02-10
 Author: Alexandra Popa
 Maintainer: A. Popa <alexandra.mariela.popa@gmail.com>
 Description: Starting with a BAM file, this package provides the
@@ -19,7 +19,7 @@ Imports: BiocGenerics, GenomeInfoDb, GenomicRanges, IRanges, reshape2,
         GenomicFeatures, grid, plyr, S4Vectors, GenomicAlignments,
         ggplot2, ggbio, Rsamtools, rtracklayer, data.table, sqldf
 Suggests: knitr, BiocStyle, TxDb.Hsapiens.UCSC.hg19.knownGene,
-        BSgenome.Hsapiens.UCSC.hg19, testthat
+        BSgenome.Hsapiens.UCSC.hg19, testthat, SummarizedExperiment
 LazyLoad: yes
 License: GPL-3
 VignetteBuilder: knitr
