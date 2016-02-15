@@ -35,7 +35,7 @@ readStartCov1Aln <-
         suppressWarnings(findOverlaps(oneBinRanges, alnGRanges))
     values(oneBinReadStartCov) =
         S4Vectors::DataFrame(
-            values=IRanges::as.table(vecReadStartCov),
+            values=as.table(vecReadStartCov),
             idSeq=oneBinRanges$idSeq
         )
     #regroup per gene name into one object:GRangesList
