@@ -1,3 +1,20 @@
+CHANGES IN VERSION 1.1.6
+-------------------------
+o replaced IRanges::as.table since it is not exported by IRanges anymore, with as.table
+o motifSize in countShiftReads and codonInfo can be only 3, 6 or 9
+o in countShiftReads and codonInfo, motifs of size 6 or 9 correspond to overalpping
+    windows, sliding 1 codon at a time
+o in countShiftReads, for motifSize = 6, the P-site is the first codon of the 2
+    it means that only the reads of the 1st codon in the 2 codon-motif are counted
+o in countShiftReads, for motifSize = 9, the P-site is the second codon of the 3
+    it means that only the reads of the 2nd codon in the 3 codon-motif are counted
+o adapted the RiboProfiling.Rnw to explain the treatment of motifs of codons (1, 2, or 3)
+    as opposed to the previous treatment of unique codons.
+o changed S4Vectors::elementLengths to S4Vectors::elementNROWS in riboSeqFromBAM,
+    aroundPromoter
+
+
+
 CHANGES IN VERSION 1.1.5
 -------------------------
 o replaced GenomicRanges::assays since it is not exported by GenomicRanges anymore,

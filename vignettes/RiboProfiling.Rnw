@@ -62,8 +62,8 @@ Ribosome profiling, the recently developed high throughput sequencing technique,
 \item Calibrate reads by applying an offset to the read start positions along the transcript.
 \item Table of read start counts (shifted if specified) on the specified region (CDS, 5pUTR, 3pUTR).
 \item A graphical quality function for ribo-seq data, based on the previously obtained tables.
-\item The quantification of codon frequency and coverage matrices in ORFs.
-\item Principal component analysis of codon coverage in ribosome-profiling.
+\item The quantification of the frequency and coverage matrices for motifs of codons (1, 2 or 3 codons) in ORFs.
+\item Principal component analysis of codon motif coverage in ribosome-profiling.
 \end{itemize}
 
 The package also provides the \Rfunction{riboSeqFromBAM} function, that assembles in a global framework some of the above analyses, allowing a quick overview of the data.
@@ -107,7 +107,7 @@ The following analyses and results are returned:
 \end{itemize}
 
 <<Import_library,echo=FALSE>>=
-suppressMessages(library(RiboProfiling))
+suppressWarnings(suppressMessages(library(RiboProfiling)))
 @
 
 
@@ -356,8 +356,15 @@ head(countsDataCtrl1[[1]], n=3)
 \end{minipage}
 
 
-\section{Count reads on codons}
-The previous \Rfunction{countShiftReads} function produces a second element in the list: the counts of reads per codons. For each ORF, for each codon in the ORF, the sum of read starts on the 3 nucleotides in the codon is reported. Codons in each ORF are described as the index of their position in the ORF.
+\section{Count reads on codon motifs}
+The previous \Rfunction{countShiftReads} function produces a second element in the list: the counts of reads per motifs of 1, 2, or 3 codons. For each ORF, for each motif in the ORF, the Ribo-seq coverage of the motif is reported as follows:
+\begin{itemize}
+\item for motifs of 3 nucleotides (1 codon) - the sum of read starts on the 3 nucleotides in the codon is reported.
+\item consecutive motifs of 6 nucleotides (2 consecutive codons) overlap on 3 nucleotides. The Ribo-seq coverage is reported as the coverage on the 1st codon in the motif considered as being in the P-site.
+\item consecutive motifs of 9 nucleotides (3 consecutive codons) overlap on 6 nucleotides. The Ribo-seq coverage is reported as the coverage on the 2nd codon in the motif considered as being in the P-site.
+\end{itemize}
+
+Codon motifs in each ORF are described as the index of their position in the ORF.
 
 Here is an example:
 <<codon_cov_position,echo=TRUE,eval=TRUE>>=
@@ -365,7 +372,7 @@ data(codonIndexCovCtrl)
 head(codonIndexCovCtrl[[1]], n=3)
 @
 
-The \Rfunction{codonInfo} function associates the read coverage on codons with their corresponding codon type for each ORF. It returns a list of 2 matrices: one containing the frequency of each codon type in each ORF and the second containing the coverage of each codon type in each ORF.
+The \Rfunction{codonInfo} function associates the read coverage on codons with their corresponding codon type for each ORF. It returns a list of 2 matrices: one containing the frequency of each codon motif type in each ORF and the second containing the coverage of each codon motif type in each ORF.
 
 <<CodonAnalysis_echo,fig=FALSE,echo=TRUE,eval=FALSE>>=
 listReadsCodon <- countsDataCtrl1[[2]]
@@ -397,7 +404,7 @@ head(codonDataCtrl[[1]], n=3)
 @
 
 
-The codon coverage can be used to study the ribosome translation dynamics. One can test if codons accumulating ribo-seq reads represent a stalling in the ribosome progression. In the \Rpackage{RiboProfiling} package we have implemented the \Rfunction{codonPCA} function that performs a PCA analysis on a matrix of read density on codons (figures \ref{fig:CodonPCA1}).
+The codon coverage can be used to study the ribosome translation dynamics. One can test if codon motifs accumulating ribo-seq reads represent a stalling in the ribosome progression. In the \Rpackage{RiboProfiling} package we have implemented the \Rfunction{codonPCA} function that performs a PCA analysis on a matrix of read density on codons (figures \ref{fig:CodonPCA1}).
 
 
 %SweaveOpts{width=10, height=5}

@@ -516,7 +516,7 @@ funcPlotPairs <-
 
 getCodons <-
     function(
-        seqChar, sizeMotif){
+        seqChar, sizeMotif, stepSize){
 #    oneCharSplit <- sapply(seqChar, strsplit, "")[[1]]
 #
 #     codonSeq <-
@@ -525,17 +525,19 @@ getCodons <-
 #             oneCharSplit[c(FALSE, TRUE, FALSE)],
 #             oneCharSplit[c(FALSE, FALSE, TRUE)]
 #         )
+    motifStart <- seq.int(1, nchar(seqChar)-1, stepSize)
+    motifEnd <- motifStart + sizeMotif - 1L
 
     codonSeq <-
         substring(
             seqChar,
-            seq(1, nchar(seqChar)-1, sizeMotif),
-            seq(sizeMotif, nchar(seqChar), sizeMotif)
+            motifStart,
+            motifEnd
         )
-    #if the last element in sequence is smaller than the desired size
-    #ignore it
-    if(codonSeq[length(codonSeq)] == ""){
-        codonSeq <- head(codonSeq, -1)
+    #motifs with a size different from sizeMotif are discarded
+    ixMotifSizes <- which(nchar(codonSeq) != sizeMotif)
+    if(length(ixMotifSizes) > 0){
+        codonSeq <- codonSeq[-ixMotifSizes]
     }
     codonsInSeq <- cbind(seq_len(length(codonSeq)), codonSeq)
     colnames(codonsInSeq) <- c("codonID", "codon")

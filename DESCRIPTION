@@ -2,8 +2,8 @@ Package: RiboProfiling
 Type: Package
 Title: Ribosome Profiling Data Analysis: from BAM to Data
         Representation and Interpretation
-Version: 1.1.5
-Date: 2016-02-10
+Version: 1.1.6
+Date: 2016-02-25
 Author: Alexandra Popa
 Maintainer: A. Popa <alexandra.mariela.popa@gmail.com>
 Description: Starting with a BAM file, this package provides the

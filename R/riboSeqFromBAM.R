@@ -106,7 +106,7 @@ riboSeqFromBAM <-
             }
             #gene annotations from UCSC
             txdb <- suppressWarnings(
-                GenomicFeatures::makeTranscriptDbFromUCSC(
+                GenomicFeatures::makeTxDbFromUCSC(
                     genome=genomeName,
                     tablename="ensGene",
                     url="http://genome-euro.ucsc.edu/cgi-bin/"
@@ -207,7 +207,7 @@ riboSeqFromBAM <-
         #keep only CDS on the chromosomes for which there are reads
         #cdsAll_chr=cdsAll[seqnames(cdsAll) %in% seqInAlignment]
         seqlevels(cdsAll, force=TRUE) <- as.character(seqInAlignment)
-        cdsByGene <- cdsAll[S4Vectors::elementLengths(cdsAll) != 0]
+        cdsByGene <- cdsAll[S4Vectors::elementNROWS(cdsAll) != 0]
 
 
         ####### plot the coverage x bp left and right from the TSS

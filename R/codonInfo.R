@@ -8,8 +8,8 @@
 #' @param orfCoord a GRangesList.
 #' The coordinates of the ORFs on the genome.
 #' @param motifSize an integer. The number of nucleotides in each motif
-#' on which to compute coverage and usage. Default 3 nucleotides (codon).
-#' No motif longer than 6 nucleotides is accepted.
+#' on which to compute coverage and usage. Either 3, 6, or 9.
+#' Default 3 nucleotides (codon).
 #' Attention! For long motifs, the function can be quite slow!!
 #' @return a list of 2 data.frame objects:
 #' one with the number of times each codon type is found in each ORF and
@@ -57,39 +57,47 @@ codonInfo <-
     if(!is(orfCoord, "GRangesList")){
         stop("The ORF coordinates (orfCoord) are not a GRangesList class!\n")
     }
-    if(missing(motifSize) || !is(motifSize, "numeric") || motifSize %% 1 != 0 || motifSize <= 0){
-        warning("Param motifSize should be an integer! Default value is 3.\n")
+    if(missing(motifSize) ||
+       !is(motifSize, "numeric") ||
+       motifSize %% 1 != 0 ||
+       motifSize <= 0 ||
+       !(motifSize %in% c(3, 6, 9))){
+        warning("Param motifSize should be an integer! Accepted values 3, 6 or 9. Default value is 3.\n")
         motifSize <- 3
-    }
-    if(motifSize > 6){
-        warning("Param motifSize shouldn't be more than 6 nucleotides. Set to 6.\n")
-        motifSize <- 6
     }
     .id <- NULL
     codonID <- NULL
     codon <- NULL
+    stepSize <- motifSize
 
     #extract the orf sequence
     cdsSeqs <- GenomicFeatures::extractTranscriptSeqs(genomeSeq, orfCoord)
     orfNames <- names(cdsSeqs)
+
+    #if motifSize >3 then create counts for overlapping 1 codon shifted motifs
+    if(motifSize > 3){
+        stepSize = 3
+    }
 
     #codonUsage <- Biostrings::trinucleotideFrequency(cdsSeqs, step=3)
     #I use with.labels=F for rapidity
     codonUsage <- Biostrings::oligonucleotideFrequency(
         cdsSeqs,
         width=motifSize,
-        step=motifSize,
+        step=stepSize,
         with.labels=F
         )
     #I launch with labels only on the the first sequence, to get the patterns
     testCodonUsage <- Biostrings::oligonucleotideFrequency(
         cdsSeqs[[1]],
         width=motifSize,
-        step=motifSize
+        step=stepSize
     )
-    codonUsage <- data.frame(codonUsage)
     colnames(codonUsage) <- names(testCodonUsage)
     rownames(codonUsage) <- orfNames
+    #codonUsage <- codonUsage[,colSums(codonUsage) !=0]
+    codonUsage <- data.frame(codonUsage)
+
     #codonUsage <- ldply(codonUsage)
 
     dataListReadsCodonID <- plyr::ldply(.data=listReadsCodon)
@@ -99,7 +107,7 @@ codonInfo <-
     #### ????here group the info: if 3 codons, than paste the 3 codons together and sum their info
     #something of the type
     codonTypeID <- lapply(as.character(cdsSeqs), function(x){
-        getCodons(x, sizeMotif=motifSize)
+        getCodons(x, sizeMotif=motifSize, stepSize)
         })
     # system.time(sapply(lapply(cdsSeqs,as.character),getCodons))
     # user  system elapsed
@@ -139,7 +147,9 @@ codonInfo <-
         reshape2::dcast(codonTypeCoverage, .id ~ codon, value.var="nbrReads")
     codonCovMatrix <- codonTypeCoverageFrame[, 2:ncol(codonTypeCoverageFrame)]
     rownames(codonCovMatrix) <- codonTypeCoverageFrame$.id
-    codonCovMatrix[is.na(codonCovMatrix)] <- 0
+    #codonCovMatrix[is.na(codonCovMatrix)] <- 0
+    for (j in seq_len(ncol(codonCovMatrix)))
+        data.table::set(codonCovMatrix, which(is.na(codonCovMatrix[[j]])),j,0)
     codonCovMatrix <- as.data.frame(lapply(codonCovMatrix,as.numeric))
     rownames(codonCovMatrix) <- codonTypeCoverageFrame$.id
 

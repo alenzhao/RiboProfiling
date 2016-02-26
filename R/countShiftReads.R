@@ -14,14 +14,19 @@
 #' The offset for recalibrating reads on transcripts when computing coverage.
 #' The default value for this parameter is 0, no offset should be performed.
 #' @param motifSize an integer. The number of nucleotides in each motif
-#' on which to compute coverage and usage. Default 3 nucleotides (codon).
+#' on which to compute coverage and usage. Either 3, 6, or 9.
+#' Default 3 nucleotides (codon).
 #' @return a list with 2 objects.
 #' The first object in the list is a data.frame containing:
 #' information on ORFs (names, chromosomal position, length)
 #' as well as the counts on the 5pUTR, CDS and 3pUTR once the offset is applied.
 #' The second object in the list is a list in itself.
-#' It contains for each ORF in the cdsPosTransc,
+#' It contains: for each ORF in the cdsPosTransc,
 #' for each codon the sum of read starts covering the 3 codon nucleotides.
+#' For motifs of size 6 nucleotides, the motif coverage is computed only
+#' for the first codon in the motif, considered as the codon in the P-site.
+#' For motifs of size 9 nucleotides, the motif coverage is computed only
+#' for the second codon in the motif, considered as the codon in the P-site.
 #' This per codon coverage does not contain information on the codon type,
 #' just its position in the ORF and its coverage.
 #' @examples
@@ -101,8 +106,12 @@ countShiftReads <-
         )
     }
 
-    if(missing(motifSize) || !is(motifSize, "numeric") || motifSize %% 1 != 0 || motifSize <= 0){
-        warning("Param motifSize should be an integer! Default value is 3.\n")
+    if(missing(motifSize) ||
+       !is(motifSize, "numeric") ||
+       motifSize %% 1 != 0 ||
+       motifSize <= 0 ||
+       !(motifSize %in% c(3, 6, 9))){
+        warning("Param motifSize should be an integer! Accepted values 3, 6 or 9. Default value is 3.\n")
         motifSize <- 3
     }
 
@@ -220,12 +229,52 @@ countShiftReads <-
             naTozeroRle(match(matchedReadsTransc, listeRanges3UTR[[ixTransc]]));
         #count the number of reads per codon
         if(length(matchedReadsCDS) > 0){
-            myCodonCounts <-
+            # if(motifSize <= 3){
+            allCodonCounts <-
                 aggregate(
                     S4Vectors::runLength(matchedReadsCDS),
-                    by=list(ceiling(S4Vectors::runValue(matchedReadsCDS) / motifSize)),
+                    by=list(ceiling(S4Vectors::runValue(matchedReadsCDS) / 3)),
                     FUN=sum
                 )
+            if(motifSize <= 3){
+                myCodonCounts <- allCodonCounts
+            }
+            else{
+                if(motifSize == 6){
+                    myCodonCounts <-
+                        allCodonCounts[1:(nrow(allCodonCounts)-1), ]
+                }
+                else{
+                    if(motifSize == 9){
+                        myCodonCounts <-
+                            allCodonCounts[2:(nrow(allCodonCounts)-1), ]
+                    }
+                }
+            }
+#                 myCodonCounts <-
+#                     aggregate(
+#                         S4Vectors::runLength(matchedReadsCDS),
+#                         by=list(ceiling(S4Vectors::runValue(matchedReadsCDS) / motifSize)),
+#                         FUN=sum
+#                     )
+#             }
+#             #for motifs >3 make overlapping windows shifted with 3 nucleotides
+#             else{
+#                 motifStart <- seq.int(
+#                     from=1,
+#                     to=max(runValue(matchedReadsCDS)),
+#                     by=3)
+#                 motifEnd <- motifStart + motifSize - 1L
+#                 motifIRanges <- IRanges(start=motifStart, end=motifEnd)
+#                 myRleToIRanges <- IRanges(
+#                     start=rep(
+#                         runValue(matchedReadsCDS),
+#                         runLength(matchedReadsCDS)),
+#                     width=1)
+#                 myMotifCounts <- countOverlaps(motifIRanges, myRleToIRanges)
+#                 myCodonCounts <- data.frame(cbind(1:length(myMotifCounts), myMotifCounts))
+#
+#             }
         }
         else{
             nbrCodons <- ceiling(length(listeRangesCDS[[ixTransc]]) / motifSize)
