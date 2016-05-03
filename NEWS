@@ -1,0 +1,128 @@
+CHANGES IN VERSION 1.1.6
+-------------------------
+o replaced IRanges::as.table since it is not exported by IRanges anymore, with as.table
+o motifSize in countShiftReads and codonInfo can be only 3, 6 or 9
+o in countShiftReads and codonInfo, motifs of size 6 or 9 correspond to overalpping
+    windows, sliding 1 codon at a time
+o in countShiftReads, for motifSize = 6, the P-site is the first codon of the 2
+    it means that only the reads of the 1st codon in the 2 codon-motif are counted
+o in countShiftReads, for motifSize = 9, the P-site is the second codon of the 3
+    it means that only the reads of the 2nd codon in the 3 codon-motif are counted
+o adapted the RiboProfiling.Rnw to explain the treatment of motifs of codons (1, 2, or 3)
+    as opposed to the previous treatment of unique codons.
+o changed S4Vectors::elementLengths to S4Vectors::elementNROWS in riboSeqFromBAM,
+    aroundPromoter
+
+
+
+CHANGES IN VERSION 1.1.5
+-------------------------
+o replaced GenomicRanges::assays since it is not exported by GenomicRanges anymore,
+    by SummarizedExperiment::assays, and importFrom
+
+CHANGES IN VERSION 1.1.4
+-------------------------
+o replaced GenomicRanges::assays since it is not exported by GenomicRanges anymore,
+    by assays
+
+CHANGES IN VERSION 1.1.3
+-------------------------
+o function "codonInfo" modified
+    optimized for motifs of 1 or 2 consecutive codons
+o getCodons (utils), countShiftReads, and codonInfo functions modified
+    it allows to look at sequence motifs not only for codons (3 nucleotides) but for other sizes as well
+    motifSize parameter has been added to these functions to specify the number
+    of nucleotides on which to compute usage and coverage.
+o function "readsToReadStart" replaced by "readsToStartOrEnd"
+    this new function focuses not only the read 5' (start) but also the read 3' (end)
+o In riboSeqFromBAM added a parameter offsetStartEnd. It specifies if the offset
+    is to be computed on the 5' or 3' of the read.
+
+
+CHANGES IN VERSION 1.1.2
+-------------------------
+o added slope to geom_abline function
+
+
+CHANGES IN VERSION 1.1.1
+-------------------------
+o Added RiboSeq biocViews
+
+CHANGES IN VERSION 0.99.7
+-------------------------
+o In riboSeqFromBAM function capture.output called with utils::
+
+CHANGES IN VERSION 0.99.6
+-------------------------
+o In codonPCA functions prcomp and kmeans called with stats::
+
+CHANGES IN VERSION 0.99.5
+-------------------------
+o Added @return for roxygen comment in printPCA.R
+o Updated packages IRanges and BSgenome.Mmusculus.UCSC.mm10 before check.
+
+CHANGES IN VERSION 0.99.4
+-------------------------
+o Non-null coverage values define the percentage of best expressed CDSs.
+o New function: readsToReadStart -
+    it builds the GRanges object of the read start genomic positions
+o Acronym BAM used instead of bam
+o Correction of read start coverage (readStartCov) for the reverse strand
+o Title in Description in Title Case
+o Typos corrections in vignette.
+o Style inconsistencies solved:
+    = replaced by <- outside named arguments
+    No space around “=” when using named arguments to functions. This: somefunc(a=1, b=2)
+    spaces around binary operators
+    a space after all commas
+    use of camelCase for both variable and function names
+        ORFrelativePos -> orfRelativePos
+o Replaced 1:length(x) by seq_len(length(x))
+o Replaced 1:nrow(x) by seq_len(NROW(x))
+o Replaced trailing white spaces with this command: 'find . -type f -path './*R' -exec perl -i -pe 's/ +$//' {} \;'
+o countsPlot, histMatchLength, plotSummarizedCov:
+    no longer print directly the graphs. Instead they return a list of graphs.
+o Replaced 'class()' tests by 'inherits' or 'is'.
+o The codonPCA function no longer prints the PCA graphs sequantially.
+    The 5 PCA graphs are returned, together with the PCA scores.
+o New function printPCA prints the 5 PCA plots produced by codonPCA.
+o A BAM file is now available in the inst/extdata ctrl_sample.bam.
+    It is used in the testriboSeqFromBAM testthat
+
+CHANGES IN VERSION 0.99.3
+-------------------------
+o Correction of a infinite loop in function riboSeq_fromBam
+
+CHANGES IN VERSION 0.99.2
+-------------------------
+o Modified the vignette: small corrections of the explanatory text.
+o Added testthat tests for the following functions:
+    test-aroundPromoter.R,
+    test-riboSeq_fromBAM.R,
+    test-readStartCov.R
+
+o Introduced the 4 spaces tabulation
+o Reduced the percentage of lines > 80 characters to 2%
+o Added imports in the Namespace for the proposed packages or methods
+o New R version: 3.2.2 and bioconductor packages update
+
+CHANGES IN VERSION 0.99.1
+-------------------------
+o Added biocViews:
+    Sequencing,
+    Coverage,
+    Alignment,
+    QualityControl,
+    Software,
+    PrincipalComponent
+o Added testthat tests for the following functions:
+    test-aroundPromoter.R,
+    test-riboSeq_fromBAM.R,
+    test-readStartCov.R
+
+o Introduced the 4 spaces tabulation
+o Reduced the percentage of lines > 80 characters to 2%
+o Added imports in the Namespace for the proposed packages or methods
+
+v.0.99.0 Initial release.
+-------------------------
