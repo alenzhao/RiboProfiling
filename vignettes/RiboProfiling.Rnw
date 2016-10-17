@@ -1,0 +1,459 @@
+%\VignetteIndexEntry{Analysing Ribo-Seq data with the "RiboProfiling" package}
+%\VignettePackage{RiboProfiling}
+%\VignetteEngine{knitr::knitr}
+
+% \VignetteKeyword{Ribo-seq}
+% \VignetteKeyword{ribosome offset computation}
+% \VignetteKeyword{shifted read start coverage}
+% \VignetteKeyword{codon coverage}
+
+% To compile this document
+% library('cacheSweave');rm(list=ls());Sweave('RiboProfiling.Rnw',driver=cacheSweaveDriver());system("pdflatex RiboProfiling")
+
+
+\documentclass[10pt,oneside]{article}
+
+\usepackage{caption}
+
+\title{RiboProfiling - Analysis and quality assessment of Ribosome-profiling data}
+\author{Alexandra Popa$^{1*}$\\[1em] \small{$^{1}$ Institut de Pharmacologie Moleculaire et Cellulaire (IPMC), Valbonne, FRANCE} \\ \small{\texttt{$^*$alexandra.mariela.popa@gmail.com}}}
+
+\newcommand{\lowtilde}{\raise.17ex\hbox{$\scriptstyle\mathtt{\sim}$}}
+
+<<knitr, echo=FALSE, results="hide">>=
+library("knitr")
+opts_chunk$set(tidy=FALSE,dev="png",fig.show="hide",
+               fig.width=4,fig.height=4.5,
+               message=FALSE)
+@
+
+<<<style-knitr, eval=TRUE, echo=FALSE, results="asis">>=
+BiocStyle::latex()
+@
+
+
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+%\SweaveOpts{concordance=TRUE}
+%
+% <<setup, include=FALSE, cache=FALSE>>=
+% muffleError <- function(x,options) {}
+% knit_hooks$set(error=muffleError)
+% @
+%
+
+\maketitle
+
+<<options,echo=FALSE>>=
+options(digits=3, width=80, prompt=" ", continue=" ")
+@
+
+\newpage
+
+\tableofcontents
+
+
+\section{Introduction}
+Ribosome profiling, the recently developed high throughput sequencing technique, enabled the mapping of translated regions genome-wide. This technique takes advantage of the fact that ribosomes actively engaged in translation can protect their associated mRNA fragments against RNAse digestion. The sequencing of these protected fragments can reveal potentially translated sequences. \Rpackage{RiboProfiling} is a Bioconductor package that provides multiple types of ribo-seq data analysis, starting from BAM files alone:
+\begin{itemize}
+\item Quality assessment of read match size distribution.
+\item Read coverage around the TSS for the definition of an offset (shift value) of ribosome position.
+\item Calibrate reads by applying an offset to the read start positions along the transcript.
+\item Table of read start counts (shifted if specified) on the specified region (CDS, 5pUTR, 3pUTR).
+\item A graphical quality function for ribo-seq data, based on the previously obtained tables.
+\item The quantification of the frequency and coverage matrices for motifs of codons (1, 2 or 3 codons) in ORFs.
+\item Principal component analysis of codon motif coverage in ribosome-profiling.
+\end{itemize}
+
+The package also provides the \Rfunction{riboSeqFromBAM} function, that assembles in a global framework some of the above analyses, allowing a quick overview of the data.
+
+\section{Data Input}
+As input data, the \Rpackage{RiboProfiling} package can start with a path to a ribo-seq (or other type of) BAM to be analyzed. A list of multiple BAM files can also be provided. BAM files from either bowtie/tophat, STAR, and Lifescope (Solid), single- and paired-end have been validated. Many intermediate functions of the \Rpackage{RiboProfiling} package can be called for additional modifications on the data objects.
+
+Example data files provided with the \Rpackage{RiboProfiling} package are based on chromosome 1 reads from human primary BJ fibroblasts data (PMID: 23594524, SRA: \url{http://www.ebi.ac.uk/ena/data/view/SRP020544}):
+\begin{itemize}
+\item BAM file Ctrl \url{"http://genomique.info/data/public/RiboProfiling/ctrl.bam"}.
+\item BAM file Nutlin2h \url{"http://genomique.info/data/public/RiboProfiling/nutlin2h.bam"}.
+\end{itemize}
+
+The data provided with the \Rpackage{RiboProfiling} package and accessible through the \Rfunction{data} function consists of:
+\begin{itemize}
+\item \textbf{ctrlGAlignments} - a GAlignments object corresponding to the \url{"http://genomique.info/data/public/RiboProfiling/ctrll.bam"} BAM.
+\item \textbf{codonIndexCovCtrl} -  a list containing the number of reads for each codon in each ORF.
+\item \textbf{codonDataCtrl} - a list of 2 data.frames containing the frequency of codons for each ORF and, respectively, the read coverage for the same codons and ORFs.
+\end{itemize}
+
+\section{Quick start}
+The fastest way to analyze a list of BAM files with the \Rpackage{RiboProfiling} package is to call the \Rfunction{riboSeqFromBAM} function. The only input needed are the paths to the BAM files and the genome version on which the mapping was done. Here is an example on how to use this wrapper function on 2 BAM files.
+
+<<Import_library_noEcho,echo=TRUE,eval=FALSE>>=
+library(RiboProfiling)
+listInputBam <- c(
+    BamFile("http://genomique.info/data/public/RiboProfiling/ctrl.bam"),
+    BamFile("http://genomique.info/data/public/RiboProfiling/nutlin2h.bam")
+    )
+covData <- riboSeqFromBAM(listInputBam, genomeName="hg19")
+@
+
+The following analyses and results are returned:
+\begin{itemize}
+\item \textbf{a histogram of read match lengths}: figures \ref{Hist_Offset_ctrl1} and \ref{Hist_Offset_ctrl2}.
+\item \textbf{a read start coverage plot around the TSS}: figures \ref{Hist_Offset_ctrl1} and \ref{Hist_Offset_ctrl2}.
+\item \textbf{an automatic estimation and application of the ribosome offset position (if no offset value is provided (listShiftValue parameter missing))}
+\item \textbf{a data.frame containing CDSs annotation and counts on the 5pUTR, CDS, and 3pUTR once the offset has been applied}
+\item \textbf{pairs and boxplots of the read counts}: figures \ref{Pairs_Ctrl} and \ref{Boxplot_ctrl}.
+\item \textbf{a list of per ORF per codon coverage}
+\end{itemize}
+
+<<Import_library,echo=FALSE>>=
+suppressWarnings(suppressMessages(library(RiboProfiling)))
+@
+
+
+<<riboSeqfromBam,echo=FALSE,eval=TRUE,pdf=FALSE,jpeg=TRUE,fig.width=7>>=
+listeInputBam <- c(
+    Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/ctrl.bam"),
+    Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/nutlin2h.bam")
+)
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+covData <-
+    suppressMessages(
+        suppressWarnings(
+            riboSeqFromBAM(
+                listeInputBam,
+                txdb=txdb,
+                listShiftValue=c(-14, -14)
+            )
+        )
+    )
+@
+
+% \begin{figure}[!ht]
+% \centering
+\noindent%
+\begin{minipage}{\textwidth}
+\includegraphics[width=0.45\textwidth]{figure/riboSeqfromBam-1}
+\includegraphics[width=0.55\textwidth]{figure/riboSeqfromBam-2}
+\captionof{figure}{
+\textbf{Histogram of read match size and read start offset to ribosome P-site
+    for ctrl.bam dataset.}}
+\label{Hist_Offset_ctrl1}
+\end{minipage}\hfill
+
+
+\noindent%
+\begin{minipage}{\textwidth}
+\includegraphics[width=0.45\textwidth]{figure/riboSeqfromBam-3}
+\includegraphics[width=0.55\textwidth]{figure/riboSeqfromBam-4}
+\captionof{figure}{
+  \textbf{Histogram of read match size and read start offset to ribosome P-site
+    for nutlin2h.bam dataset.}}
+\label{Hist_Offset_ctrl2}
+\end{minipage}\hfill
+
+
+% \begin{figure}[!ht]
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\centering
+\makebox[\linewidth]{
+\includegraphics[height=0.3\textheight]{figure/riboSeqfromBam-5}
+\includegraphics[height=0.3\textheight]{figure/riboSeqfromBam-6}}
+\captionof{figure}{\textbf{Pairs of shifted read counts on 5pUTR, CDS, and 3pUTR for ctrl.bam and nutlin2h.bam dataset.}}
+\label{Pairs_Ctrl}
+\end{minipage}
+% \end{figure}
+
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\centering
+\makebox[\linewidth]{
+\includegraphics[width=0.6\textwidth]{figure/riboSeqfromBam-7}}
+\captionof{figure}{\textbf{Boxplot of shifted read counts on 5pUTR, CDS, and 3pUTR for ctrl.bam and nutlin2h.bam dataset.}}
+\label{Boxplot_ctrl}
+\end{minipage}
+
+All these results will be explained in detail in the following sections.
+
+This general function only works if your species model has an ensembl table in the UCSC database or if you provide the corresponding txdb object containing the annotations.
+
+\section{Histogram of read match length}
+This histogram represents both a quality control of the sequencing and an important tool to define the match sizes of reads corresponding to ribosome footprints (around 30bp). The \emph{histMatchLength} function in the \Rpackage{RiboProfiling} package produces this histogram starting from a GAlignment object (the loaded records of a BAM) such as the \emph{ctrlGAlignments} data example (figure \ref{Hist_matchLength}).
+
+One can create a GAlignments from a BAM using the \Rfunction{readGAlignments} function from the \Rpackage{GenomicAlignments} package:
+<<GAlignments_from_BAM,echo=TRUE,eval=FALSE>>=
+aln <- readGAlignments(
+        BamFile("http://genomique.info/data/public/RiboProfiling/ctrl.bam")
+    )
+@
+
+Or based on an already existing GAlignments object:
+<<Hist_quick,echo=TRUE,eval=TRUE,pdf=FALSE,jpeg=TRUE>>=
+data(ctrlGAlignments)
+aln <- ctrlGAlignments
+matchLenDistr <- histMatchLength(aln, 0)
+matchLenDistr[[2]]
+@
+
+\noindent%
+\begin{minipage}{\linewidth}% to keep image and caption on one page
+\centering
+\includegraphics[width=.45\textwidth,page=1]{figure/Hist_quick-1}
+\captionof{figure}{
+  \textbf{Histogram of read match length for example data: ctrlGAlignments.}}
+\label{Hist_matchLength}
+\end{minipage}
+
+
+\section{Read start coverage plot around the TSS}
+The initiation of protein synthesis starts with the first codon in the P-site. In ribosome profiling experiments, the location of the P-site codon must be inferred in order to recalibrate the read start positions relative to the transcript. An offset is usually observed in Ribo-seq experiments between the starting of the reads and the AUG codons of protein coding sequences. Three functions allow the estimation of the read start position relative to the P-site codon:
+
+\begin{itemize}
+\item \Rfunction{aroundPromoter}: returns the genomic positions flanking the transcript start site (TSS) for the x\% (3\% default value) best expressed CDSs.
+\item \Rfunction{readStartCov}: returns the read start coverage around the TSS on the predefined CDSs.
+\item \Rfunction{plotSummarizedCov}: plots the summarized coverage in a specified range (e.g. around TSS) for the specified match sizes.
+\end{itemize}
+
+
+<<CovAroundTSS_quick,eval=FALSE,echo=TRUE,split=TRUE,fig=FALSE>>=
+#transform the GAlignments object into a GRanges object
+#(faster processing of the object)
+alnGRanges <- readsToStartOrEnd(aln, what="start")
+#txdb object with annotations
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene
+oneBinRanges <- aroundPromoter(txdb, alnGRanges, percBestExpressed=0.001)
+#the coverage in the TSS flanking region for the reads with match sizes 29:31
+listPromoterCov <-
+    readStartCov(
+        alnGRanges,
+        oneBinRanges,
+        matchSize=c(29:31),
+        fixedInterval=c(-20, 20),
+        renameChr="aroundTSS",
+        charPerc="perc"
+    )
+plotSummarizedCov(listPromoterCov)
+@
+
+<<TSS_Cov,echo=FALSE,eval=TRUE,dev="pdf",fig.height=10,pdf=FALSE,jpeg=TRUE>>=
+#transform the GAlignments object into a GRanges object
+#(faster processing of the object)
+alnGRanges <- readsToStartOrEnd(aln, what="start")
+#make a txdb object containing the annotations for the specified species.
+#In this case hg19.
+txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
+#Please make sure that seqnames of txdb correspond to the seqnames
+#of the alignment files ("chr" particle)
+#if not rename the txdb seqlevels
+#renameSeqlevels(txdb, sub("chr", "", seqlevels(txdb)))
+#get the flanking region around the promoter of the 0.1% best expressed CDSs
+oneBinRanges <- aroundPromoter(txdb, alnGRanges, percBestExpressed=0.001)
+#the coverage in the TSS flanking region for the summarized read match sizes
+#the coverage in the TSS flanking region for the reads with match sizes 29:31
+listPromoterCov <-
+    suppressWarnings(
+        readStartCov(
+            alnGRanges,
+            oneBinRanges,
+            matchSize=c(29:32),
+            fixedInterval=c(-20, 20),
+            renameChr="aroundTSS",
+            charPerc="perc"
+        )
+    )
+suppressMessages(plotSummarizedCov(listPromoterCov))
+
+@
+
+\begin{minipage}{\linewidth}
+\centering
+\includegraphics[height=0.7\textheight]{figure/TSS_Cov-1}
+\captionof{figure}{
+  \textbf{Offset around TSS for the best expressed CDSs on a subset of match sizes.}}
+\label{Offset_aroundTSS}
+\end{minipage}
+
+
+The first time you analyse a ribo-seq BAM file, it is advisable to make an offset graph for all the previously selected read match sizes, as the offset might be different depending on the read match size .
+
+
+\section{Count reads on features}
+
+The purpose of Ribosome Profiling experiments is mainly to identify RNAse resistant regions, which might indicate that these sequences are likely to be translated. The \Rfunction{countShiftReads} function quantifies the read start coverage on different sequence features. This function integrates the specificity of ribo-seq data of having shifted reads starts from the P-site codon. The \Rfunction{countShiftReads} function recalibrates the read start positions along the transcript with the specified offset (parameter \emph{shiftValue}, default 0) and returns the coverage on the 5pUTR, CDS, 3pUTR, and a matrix of codon coverage for each ORF.
+
+The counts can be used globally to see what is RNAse protected and what is not, but also for differential analysis between conditions. The \Rfunction{countsPlot} function provides some quality graphs for the ribo-seq data: pairs between counts on features and boxplots of counts between conditions.
+
+As an example, we compute the read coverage on the \textbf{ctrlGAlignments} example data:
+
+<<CountReads_echo,echo=TRUE,eval=FALSE>>=
+#keep only the match read sizes 30-33
+alnGRanges <- alnGRanges[which(!is.na(match(alnGRanges$score,30:33)))]
+#get all CDSs by transcript
+cds <- cdsBy(txdb, by="tx", use.names=TRUE)
+#get all exons by transcript
+exonGRanges <- exonsBy(txdb, by="tx", use.names=TRUE)
+#get the per transcript relative position of start and end codons
+cdsPosTransc <- orfRelativePos(cds, exonGRanges)
+#compute the counts on the different features
+#after applying the specified shift value on the read start along the transcript
+countsDataCtrl1 <-
+    countShiftReads(
+        exonGRanges=exonGRanges[names(cdsPosTransc)],
+        cdsPosTransc=cdsPosTransc,
+        alnGRanges=alnGRanges,
+        shiftValue=-14
+    )
+head(countsDataCtrl1[[1]])
+listCountsPlots <- countsPlot(
+    list(countsDataCtrl1[[1]]),
+    grep("_counts$", colnames(countsDataCtrl1[[1]])),
+    1
+)
+listCountsPlots
+@
+
+
+
+<<CountReads,echo=FALSE,eval=TRUE,fig.width=7,pdf=FALSE,jpeg=TRUE>>=
+#get all CDSs by transcript
+cds <- GenomicFeatures::cdsBy(txdb, by="tx", use.names=TRUE)
+#get all exons by transcript
+exonGRanges <- GenomicFeatures::exonsBy(txdb, by="tx", use.names=TRUE)
+#get the per transcript relative position of start and end codons
+cdsPosTransc <- orfRelativePos(cds, exonGRanges)
+#compute the counts on the different features after applying
+#the specified shift value on the read start along the transcript
+countsDataCtrl1 <-
+    countShiftReads(
+        exonGRanges[names(cdsPosTransc)],
+        cdsPosTransc,
+        alnGRanges,
+        -14
+    )
+listCountsPlots <- countsPlot(
+    list(countsDataCtrl1[[1]]),
+    grep("_counts$", colnames(countsDataCtrl1[[1]])),
+    1
+)
+invisible(capture.output(
+    suppressWarnings(
+        suppressMessages(
+            print(listCountsPlots))
+        )
+    )
+)
+head(countsDataCtrl1[[1]], n=3)
+@
+
+\begin{minipage}{\linewidth}
+\centering
+\includegraphics[width=.45\textwidth]{figure/CountReads-1}
+\includegraphics[width=.45\textwidth]{figure/CountReads-2}
+\captionof{figure}{
+  \textbf{Pairs and boxplots of read coverage on genomic features.}}
+\label{CountsPlot}
+\end{minipage}
+
+
+\section{Count reads on codon motifs}
+The previous \Rfunction{countShiftReads} function produces a second element in the list: the counts of reads per motifs of 1, 2, or 3 codons. For each ORF, for each motif in the ORF, the Ribo-seq coverage of the motif is reported as follows:
+\begin{itemize}
+\item for motifs of 3 nucleotides (1 codon) - the sum of read starts on the 3 nucleotides in the codon is reported.
+\item consecutive motifs of 6 nucleotides (2 consecutive codons) overlap on 3 nucleotides. The Ribo-seq coverage is reported as the coverage on the 1st codon in the motif considered as being in the P-site.
+\item consecutive motifs of 9 nucleotides (3 consecutive codons) overlap on 6 nucleotides. The Ribo-seq coverage is reported as the coverage on the 2nd codon in the motif considered as being in the P-site.
+\end{itemize}
+
+Codon motifs in each ORF are described as the index of their position in the ORF.
+
+Here is an example:
+<<codon_cov_position,echo=TRUE,eval=TRUE>>=
+data(codonIndexCovCtrl)
+head(codonIndexCovCtrl[[1]], n=3)
+@
+
+The \Rfunction{codonInfo} function associates the read coverage on codons with their corresponding codon type for each ORF. It returns a list of 2 matrices: one containing the frequency of each codon motif type in each ORF and the second containing the coverage of each codon motif type in each ORF.
+
+<<CodonAnalysis_echo,fig=FALSE,echo=TRUE,eval=FALSE>>=
+listReadsCodon <- countsDataCtrl1[[2]]
+#get the names of the expressed ORFs grouped by transcript
+cds <- cdsBy(txdb, use.names=TRUE)
+orfCoord <- cds[names(cds) %in% names(listReadsCodon)]
+#chromosome names should correspond between the BAM,
+#the annotations, and the genome
+genomeSeq <- BSgenome.Hsapiens.UCSC.hg19
+#codon frequency, coverage, and annotation
+codonData <- codonInfo(listReadsCodon, genomeSeq, orfCoord)
+@
+
+
+<<CodonAnalysis,fig=FALSE,echo=FALSE,eval=TRUE>>=
+listReadsCodon <- countsDataCtrl1[[2]]
+#get the names of the ORFs for which we have coverage
+#grouped by transcript
+cds <- GenomicFeatures::cdsBy(txdb, use.names=TRUE)
+orfCoord <- cds[names(cds) %in% names(listReadsCodon)]
+genomeSeq <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+#codon frequency, coverage, and annotation
+codonData <- codonInfo(listReadsCodon, genomeSeq, orfCoord)
+@
+
+<<CountReads_res,fig=FALSE,results=TRUE,echo=TRUE,split=FALSE>>=
+data("codonDataCtrl")
+head(codonDataCtrl[[1]], n=3)
+@
+
+
+The codon coverage can be used to study the ribosome translation dynamics. One can test if codon motifs accumulating ribo-seq reads represent a stalling in the ribosome progression. In the \Rpackage{RiboProfiling} package we have implemented the \Rfunction{codonPCA} function that performs a PCA analysis on a matrix of read density on codons (figures \ref{fig:CodonPCA1}).
+
+
+%SweaveOpts{width=10, height=5}
+<<CodonPCA,echo=TRUE,eval=TRUE,pdf=FALSE,jpeg=TRUE>>=
+codonUsage <- codonData[[1]]
+codonCovMatrix <- codonData[[2]]
+#keep only genes with a minimum number of reads
+nbrReadsGene <- apply(codonCovMatrix, 1, sum)
+ixExpGenes <- which(nbrReadsGene >= 50)
+codonCovMatrix <- codonCovMatrix[ixExpGenes, ]
+#get the PCA on the codon coverage
+codonCovMatrixTransp <- t(codonCovMatrix)
+rownames(codonCovMatrixTransp) <- colnames(codonCovMatrix)
+colnames(codonCovMatrixTransp) <- rownames(codonCovMatrix)
+listPCACodonCoverage <- codonPCA(codonCovMatrixTransp, "codonCoverage")
+listPCACodonCoverage[[2]]
+@
+
+
+% \begin{minipage}{\linewidth}
+% \centering
+% \includegraphics[keepaspectratio=true,scale=1]{figure/CodonPCA-1}
+% \captionof{figure}{
+%     \textbf{PCA on codon coverage for the \textbf{ctrlGAlignments} example data.}}
+% \label{fig:CodonPCA1}
+% \end{minipage}
+
+\begin{minipage}{\linewidth}
+\centering
+\includegraphics[width=.45\textwidth]{figure/CodonPCA-1}
+\includegraphics[width=.45\textwidth]{figure/CodonPCA-2}
+% \captionof{figure}{
+%   \textbf{PCA on codon coverage.}}
+% \label{fig:CodonPCA1}
+\end{minipage}
+
+\begin{minipage}{\linewidth}
+\centering
+\includegraphics[width=.45\textwidth]{figure/CodonPCA-3}
+\includegraphics[width=.45\textwidth]{figure/CodonPCA-4}
+\captionof{figure}{
+  \textbf{PCA on codon coverage for the \textbf{ctrlGAlignments} example data.}}
+\label{fig:CodonPCA1}
+\end{minipage}
+
+
+<<sessInfo,echo=TRUE,eval=TRUE>>=
+sessionInfo()
+@
+
+
+\end{document}
