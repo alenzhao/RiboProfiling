@@ -1,3 +1,8 @@
+CHANGES IN VERSION 1.5.1
+-------------------------
+o For the vignette the example bam files have been down-samples and added to the extdata folder
+o Changed the vignette accordingly
+
 CHANGES IN VERSION 1.1.6
 -------------------------
 o replaced IRanges::as.table since it is not exported by IRanges anymore, with as.table

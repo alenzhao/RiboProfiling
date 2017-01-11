@@ -112,10 +112,14 @@ suppressWarnings(suppressMessages(library(RiboProfiling)))
 
 
 <<riboSeqfromBam,echo=FALSE,eval=TRUE,pdf=FALSE,jpeg=TRUE,fig.width=7>>=
-listeInputBam <- c(
-    Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/ctrl.bam"),
-    Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/nutlin2h.bam")
-)
+# listeInputBam <- c(
+#     Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/ctrl.bam"),
+#     Rsamtools::BamFile("http://genomique.info/data/public/RiboProfiling/nutlin2h.bam")
+# )
+myFileCtrl <- system.file("extdata", "ctrl_sample.bam", package="RiboProfiling")
+myFileNutlin2h <- system.file("extdata", "nutlin2h_sample.bam", package="RiboProfiling")
+listeInputBam <- c(myFileCtrl, myFileNutlin2h)
+
 txdb <- TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
 covData <-
     suppressMessages(
